@@ -40,7 +40,71 @@
             padding: 8px;
         }
 
+        /* SCHERMATA LOGIN PASSWORD */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+
+        .login-card h2 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
         .container {
+            display: none; /* nascosto finché non viene inserita la password */
             background-color: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -50,7 +114,6 @@
             border: 1px solid var(--border-color);
         }
 
-        /* HEADER E LOGO ONAIR MULTIMEDIA */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -85,8 +148,6 @@
             font-size: 1.2rem;
             letter-spacing: 1.5px;
             line-height: 1;
-            display: flex;
-            align-items: center;
         }
 
         .logo-onair .text-onair span {
@@ -118,7 +179,6 @@
             margin-top: 2px;
         }
 
-        /* BARRA TAB EXCEL RESPONSIVE */
         .tabs-bar {
             display: flex;
             gap: 4px;
@@ -166,7 +226,6 @@
             display: block;
         }
 
-        /* PANEL MASTER */
         .master-panel {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
@@ -202,7 +261,6 @@
             outline: none;
         }
 
-        /* CALENDARIO & QUADRETTI */
         .actions-bar {
             display: flex;
             justify-content: space-between;
@@ -265,7 +323,6 @@
             border-color: rgba(56, 189, 248, 0.4);
         }
 
-        /* NUMERO GIORNO IPER-VISIBILE */
         .day-num-badge {
             align-self: flex-start;
             background: rgba(255, 255, 255, 0.15);
@@ -286,7 +343,6 @@
             color: var(--accent-color);
         }
 
-        /* CONTROLLI TOUCH AMPI PER SMARTPHONE */
         .touch-input-group {
             display: flex;
             align-items: center;
@@ -344,7 +400,6 @@
             margin-top: 2px;
         }
 
-        /* SUMMARY BOX */
         .summary-box {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 1px solid var(--accent-color);
@@ -377,7 +432,6 @@
             margin-top: 4px;
         }
 
-        /* ADATTAMENTO SMARTPHONE PICCOLI */
         @media (max-width: 600px) {
             body {
                 padding: 4px;
@@ -428,16 +482,23 @@
 </head>
 <body>
 
-<div class="container">
+<!-- SCHERMATA LOGIN PASSWORD -->
+<div id="loginOverlay">
+    <div class="login-card">
+        <h2>Area Riservata</h2>
+        <p>Inserisci la password per accedere al calcolatore</p>
+        <input type="password" id="passInput" placeholder="Password">
+        <button onclick="checkPass()">Accedi</button>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
     <div class="header-bar">
         <div class="header-left">
-            <!-- LOGO ONAIR MULTIMEDIA -->
             <div class="logo-onair">
                 <div class="text-onair">ON<span>AIR</span></div>
                 <div class="text-multimedia">multimedia</div>
             </div>
-            
-            <!-- TITOLO E NOME SANTORO CARLO -->
             <div class="title-box">
                 <h1>Calcolatore Ore & Straordinari</h1>
                 <div class="subtitle-name">Santoro Carlo</div>
@@ -450,14 +511,11 @@
         </div>
     </div>
 
-    <!-- TAB BAR IN STILE EXCEL -->
     <div class="tabs-bar" id="tabsBar">
         <button class="tab-btn active" onclick="switchTab('master')">⚙️ Master</button>
-        <!-- Mesi via JS -->
         <button class="tab-btn" onclick="switchTab('annual')">📊 Totale Annuo</button>
     </div>
 
-    <!-- TAB MASTER CONFIGURATO CON DATI CEDOLINO -->
     <div class="tab-content active" id="tab-master">
         <div class="master-panel">
             <h2 style="font-size: 1rem; color: var(--accent-color); margin-bottom: 12px;">Dati Master da Cedolino (On Air Multimedia)</h2>
@@ -486,10 +544,8 @@
         </div>
     </div>
 
-    <!-- CONTENITORE TAB MESI -->
     <div id="monthsTabContainer"></div>
 
-    <!-- TAB TOTALE ANNUALE -->
     <div class="tab-content" id="tab-annual">
         <div class="summary-box">
             <h2 style="font-size: 1.05rem; color: var(--accent-color); margin-bottom: 12px;">Bilancio Complessivo Anno</h2>
@@ -526,6 +582,24 @@
 </div>
 
 <script>
+    const SECRET_PASS = "1234"; // CAMBIA QUI LA TUA PASSWORD DI ACCESSO
+
+    function checkPass() {
+        const entered = document.getElementById('passInput').value;
+        if (entered === SECRET_PASS) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            sessionStorage.setItem('auth_calc', 'true');
+        } else {
+            alert('Password errata!');
+        }
+    }
+
+    if (sessionStorage.getItem('auth_calc') === 'true') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+    }
+
     const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
     const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
     const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
