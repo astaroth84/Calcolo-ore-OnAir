@@ -7,7 +7,8 @@
     <!-- SDK Firebase CDN (Modulo V9) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+      import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+      import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
       // --- CONFIGURAZIONE FIREBASE ---
       const firebaseConfig = {
@@ -23,20 +24,31 @@
       try {
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
         window.db = db;
+        window.auth = auth;
         window.dbRef = ref;
         window.dbSet = set;
-        window.dbGet = get;
         window.dbOnValue = onValue;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signOut = signOut;
         window.firebaseReady = true;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                if (window.initApp) window.initApp();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+                document.getElementById('mainContainer').style.display = 'none';
+            }
+        });
+
       } catch (e) {
         console.warn("Errore inizializzazione Firebase:", e);
         window.firebaseReady = false;
-      }
-
-      if (window.initApp) {
-          window.initApp();
       }
     </script>
 
@@ -120,9 +132,8 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-color);
-            font-size: 1.1rem;
-            text-align: center;
-            margin-bottom: 15px;
+            font-size: 1rem;
+            margin-bottom: 12px;
             outline: none;
         }
 
@@ -517,12 +528,14 @@
 </head>
 <body>
 
+<!-- SCHERMATA LOGIN AUTENTICATA -->
 <div id="loginOverlay">
     <div class="login-card">
         <h2>Area Riservata</h2>
-        <p>Inserisci la password per accedere al calcolatore</p>
+        <p>Inserisci le tue credenziali Firebase</p>
+        <input type="email" id="emailInput" placeholder="Email">
         <input type="password" id="passInput" placeholder="Password">
-        <button onclick="checkPass()">Accedi</button>
+        <button onclick="loginUser()">Accedi</button>
     </div>
 </div>
 
@@ -539,9 +552,12 @@
             </div>
         </div>
 
-        <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
-            <label for="yearSelect">Anno:</label>
-            <select id="yearSelect" onchange="buildYearGrid()"></select>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
+                <label for="yearSelect">Anno:</label>
+                <select id="yearSelect" onchange="buildYearGrid()"></select>
+            </div>
+            <button class="btn-small" onclick="logoutUser()" style="background: var(--danger-color);">Esci</button>
         </div>
     </div>
 
@@ -573,10 +589,6 @@
                 <div class="input-group">
                     <label for="taxDeductionRate">Trattenute Stimate / Tasse (%)</label>
                     <input type="number" id="taxDeductionRate" value="30.0" step="0.5" oninput="calculateAll()">
-                </div>
-                <div class="input-group">
-                    <label for="appPassword">Password Accesso App</label>
-                    <input type="text" id="appPassword" value="1234" onchange="saveCloudPassword()">
                 </div>
             </div>
         </div>
@@ -624,48 +636,18 @@
     const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
     const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
-    let currentCloudPassword = "1234";
-
-    // --- GESTIONE PASSWORD SINCRONIZZATA ---
-    async function checkPass() {
-        const entered = document.getElementById('passInput').value;
-        
-        // Verifica con la password caricata da Firebase
-        if (window.firebaseReady) {
-            try {
-                const passRef = window.dbRef(window.db, 'app_config/password');
-                const snapshot = await window.dbGet(passRef);
-                if (snapshot.exists()) {
-                    currentCloudPassword = snapshot.val();
-                }
-            } catch(e) {}
-        }
-
-        if (entered === currentCloudPassword || entered === "1234") {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            sessionStorage.setItem('auth_calc', 'true');
-        } else {
-            alert('Password errata!');
+    async function loginUser() {
+        const email = document.getElementById('emailInput').value;
+        const pass = document.getElementById('passInput').value;
+        try {
+            await window.signInWithEmailAndPassword(window.auth, email, pass);
+        } catch (e) {
+            alert("Credenziali errate: " + e.message);
         }
     }
 
-    function saveCloudPassword() {
-        const newPass = document.getElementById('appPassword').value;
-        if (!newPass) return;
-        currentCloudPassword = newPass;
-        
-        if (window.firebaseReady) {
-            const passRef = window.dbRef(window.db, 'app_config/password');
-            window.dbSet(passRef, newPass).then(() => {
-                alert("Nuova password salvata e sincronizzata!");
-            });
-        }
-    }
-
-    if (sessionStorage.getItem('auth_calc') === 'true') {
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
+    function logoutUser() {
+        window.signOut(window.auth);
     }
 
     function initYearSelector() {
@@ -959,7 +941,7 @@
     }
 
     function saveSingleDayCloud(mIndex, day) {
-        if (!window.firebaseReady) return;
+        if (!window.firebaseReady || !window.auth.currentUser) return;
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
         const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
@@ -986,7 +968,7 @@
         }
         calculateAll();
 
-        if (window.firebaseReady) {
+        if (window.firebaseReady && window.auth.currentUser) {
             const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
             window.dbSet(pathRef, monthState);
         }
@@ -1005,18 +987,17 @@
         }
         calculateAll();
 
-        if (window.firebaseReady) {
+        if (window.firebaseReady && window.auth.currentUser) {
             const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
             window.dbSet(pathRef, null);
         }
     }
 
     function attachFirebaseListener() {
-        if (!window.firebaseReady) return;
+        if (!window.firebaseReady || !window.auth.currentUser) return;
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
 
-        // Ascolta variazioni Ore
         const yearRef = window.dbRef(window.db, `work_data/${year}`);
         window.dbOnValue(yearRef, (snapshot) => {
             const data = snapshot.val() || {};
@@ -1038,26 +1019,12 @@
 
             calculateAll();
         });
-
-        // Ascolta variazioni Password
-        const passRef = window.dbRef(window.db, 'app_config/password');
-        window.dbOnValue(passRef, (snapshot) => {
-            if (snapshot.exists()) {
-                currentCloudPassword = snapshot.val();
-                const inputPass = document.getElementById('appPassword');
-                if (inputPass) inputPass.value = currentCloudPassword;
-            }
-        });
     }
 
     window.initApp = function() {
         initYearSelector();
         initTabs();
         buildYearGrid();
-    };
-
-    window.onload = function() {
-        window.initApp();
     };
 </script>
 
