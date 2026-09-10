@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario Annuale Ore & Straordinari</title>
+    <title>Calendario Lavoro & Straordinari</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -15,7 +15,9 @@
             --border-color: #334155;
             --danger-color: #f43f5e;
             --success-color: #10b981;
-            --weekend-bg: rgba(255, 255, 255, 0.03);
+            --warning-color: #f59e0b;
+            --weekend-bg: rgba(56, 189, 248, 0.08);
+            --day-bg: #0f172a;
         }
 
         * {
@@ -41,7 +43,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             padding: 25px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             border: 1px solid var(--border-color);
         }
 
@@ -54,15 +56,27 @@
             letter-spacing: 1px;
         }
 
+        /* Master Panel Impostazioni */
+        .master-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .master-panel h2 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .grid-config {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
         }
 
         .input-group {
@@ -117,24 +131,19 @@
             color: #000;
         }
 
-        /* Contenitore Mesi */
+        /* Struttura Mesi */
         .year-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             margin-bottom: 25px;
         }
 
         .month-card {
             background: rgba(0, 0, 0, 0.15);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            transition: border-color 0.2s;
-        }
-
-        .month-card.active {
-            border-color: var(--accent-color);
         }
 
         .month-header {
@@ -156,7 +165,7 @@
             font-size: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .month-badge {
@@ -176,33 +185,82 @@
             display: block;
         }
 
-        .month-days-grid {
+        /* Griglia Calendario a Quadrettoni */
+        .calendar-weekdays {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
             margin-bottom: 15px;
         }
 
-        .day-row {
+        .calendar-day {
+            background: var(--day-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 6px;
+            min-height: 80px;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 10px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
         }
 
-        .day-row.weekend {
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .calendar-day.weekend {
             background: var(--weekend-bg);
-            border-left: 3px solid var(--accent-color);
+            border-color: rgba(56, 189, 248, 0.3);
         }
 
-        .day-date {
-            font-size: 0.85rem;
+        .day-num {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            align-self: flex-start;
+        }
+
+        .calendar-day.weekend .day-num {
+            color: var(--accent-color);
+        }
+
+        .day-input-box {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .day-input-box input {
+            width: 55px;
+            text-align: center;
+            padding: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .day-tag {
+            font-size: 0.68rem;
             font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
         }
 
+        /* Box Summary Totali */
         .summary-box {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 1px solid var(--accent-color);
@@ -226,30 +284,55 @@
             margin-top: 5px;
             margin-bottom: 0;
         }
+
+        @media (max-width: 768px) {
+            .calendar-grid, .calendar-weekdays {
+                grid-template-columns: repeat(7, minmax(40px, 1fr));
+            }
+            .calendar-day {
+                padding: 4px 2px;
+                min-height: 70px;
+            }
+            .day-input-box input {
+                width: 42px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Calendario Annuale Ore & Straordinari</h1>
+    <h1>Calendario Ore & Straordinari</h1>
 
-    <!-- Impostazioni Anno e Tariffe -->
-    <div class="grid-config">
-        <div class="input-group">
-            <label for="yearSelect">Anno Selezionato</label>
-            <select id="yearSelect" onchange="buildYearGrid()"></select>
-        </div>
-        <div class="input-group">
-            <label for="hourlyRate">Paga Oraria (€)</label>
-            <input type="number" id="hourlyRate" value="12" step="0.5" oninput="calculateAll()">
-        </div>
-        <div class="input-group">
-            <label for="standardHours">Ore Std / Giorno</label>
-            <input type="number" id="standardHours" value="8" step="0.5" oninput="calculateAll()">
-        </div>
-        <div class="input-group">
-            <label for="overtimeBonus">Extra (%)</label>
-            <input type="number" id="overtimeBonus" value="30" step="1" oninput="calculateAll()">
+    <!-- PANNELLO MASTER IMPOSTAZIONI GLOBAL -->
+    <div class="master-panel">
+        <h2>Pannello Master - Regole & Tariffe</h2>
+        <div class="grid-config">
+            <div class="input-group">
+                <label for="yearSelect">Anno Selezionato</label>
+                <select id="yearSelect" onchange="buildYearGrid()"></select>
+            </div>
+            <div class="input-group">
+                <label for="hourlyRate">Paga Oraria Base (€)</label>
+                <input type="number" id="hourlyRate" value="12" step="0.5" oninput="calculateAll()">
+            </div>
+            <div class="input-group">
+                <label for="standardHours">Ore Std / Giorno</label>
+                <input type="number" id="standardHours" value="8" step="0.5" oninput="calculateAll()">
+            </div>
+            <div class="input-group">
+                <label for="weekdayOvertimeRate">Extra Feriale (€/h)</label>
+                <input type="number" id="weekdayOvertimeRate" value="15.60" step="0.5" oninput="calculateAll()">
+            </div>
+            <div class="input-group">
+                <label for="weekendOvertimeRate">Extra Festivo/Sab/Dom (€/h)</label>
+                <input type="number" id="weekendOvertimeRate" value="18.00" step="0.5" oninput="calculateAll()">
+            </div>
+            <div class="input-group">
+                <label for="forfaitThreshold">Forfait Mensile (Ore)</label>
+                <input type="number" id="forfaitThreshold" value="20" step="1" oninput="calculateAll()">
+            </div>
         </div>
     </div>
 
@@ -258,27 +341,31 @@
         <button class="btn-small" onclick="toggleAllMonths(false)">Chiudi Tutti</button>
     </div>
 
-    <!-- Lista dei 12 Mesi -->
+    <!-- LISTA MESI A QUADRETTI -->
     <div class="year-container" id="yearContainer">
         <!-- Generato via JavaScript -->
     </div>
 
-    <!-- Totale Annuo -->
+    <!-- RIEPILOGO TOTALE ANNUALE -->
     <div class="summary-box">
         <div class="summary-row">
             <span>Totale Ore Ordinarie Annue:</span>
             <span id="yearStdHours">0 h</span>
         </div>
         <div class="summary-row">
-            <span>Totale Ore Straordinarie Annue:</span>
-            <span id="yearExtHours" style="color: var(--danger-color);">0 h</span>
+            <span>Totale Ore Extra Annue (Accumulate):</span>
+            <span id="yearExtHours" style="color: var(--warning-color);">0 h</span>
+        </div>
+        <div class="summary-row">
+            <span>Ore Extra Pagate Oltre Forfait:</span>
+            <span id="yearPaidExtHours" style="color: var(--danger-color);">0 h</span>
         </div>
         <div class="summary-row">
             <span>Compenso Base Annuo:</span>
             <span id="yearBasePay">0.00 €</span>
         </div>
         <div class="summary-row">
-            <span>Compenso Straordinari Annuo:</span>
+            <span>Compenso Straordinari Pagati Annuo:</span>
             <span id="yearExtPay" style="color: var(--success-color);">+0.00 €</span>
         </div>
         <div class="summary-row total">
@@ -290,7 +377,7 @@
 
 <script>
     const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-    const dayNames = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+    const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
     const yearSelect = document.getElementById('yearSelect');
 
@@ -312,29 +399,46 @@
 
         monthNames.forEach((mName, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+            // Trova il primo giorno della settimana (0 = Dom, 1 = Lun, ecc.)
+            let firstDayOfWeek = new Date(year, mIndex, 1).getDay();
+            // Converti in formato Lunedì=0, Domenica=6
+            firstDayOfWeek = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
+
             const savedData = loadSavedData(year, mIndex);
 
             const card = document.createElement('div');
             card.className = 'month-card';
             card.id = `month-card-${mIndex}`;
 
-            let daysHTML = '';
+            // Intestazione Giorni Settimana per la griglia
+            let calendarHTML = `<div class="calendar-weekdays">`;
+            weekDaysShort.forEach(d => calendarHTML += `<div>${d}</div>`);
+            calendarHTML += `</div><div class="calendar-grid">`;
+
+            // Quadretti vuoti prima del 1° del mese
+            for (let e = 0; e < firstDayOfWeek; e++) {
+                calendarHTML += `<div class="calendar-day empty"></div>`;
+            }
+
+            // Quadretti reali dei giorni
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateObj = new Date(year, mIndex, d);
-                const dayOfWeek = dateObj.getDay();
+                const dayOfWeek = dateObj.getDay(); // 0 = Dom, 6 = Sab
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                 const savedVal = savedData[d] !== undefined ? savedData[d] : '';
 
-                daysHTML += `
-                    <div class="day-row ${isWeekend ? 'weekend' : ''}">
-                        <span class="day-date">${d} ${mName.substring(0,3)} (${dayNames[dayOfWeek]})</span>
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <input type="number" class="day-input" id="m-${mIndex}-d-${d}" value="${savedVal}" min="0" max="24" step="0.5" oninput="calculateAll()" style="width: 65px; text-align: center;">
-                            <span id="m-${mIndex}-info-${d}" style="font-size:0.75rem; width: 45px; text-align:right;">-</span>
+                calendarHTML += `
+                    <div class="calendar-day ${isWeekend ? 'weekend' : ''}" id="cell-m${mIndex}-d${d}">
+                        <span class="day-num">${d}</span>
+                        <div class="day-input-box">
+                            <input type="number" class="day-input" id="m-${mIndex}-d-${d}" value="${savedVal}" min="0" max="24" step="0.5" oninput="calculateAll()">
                         </div>
+                        <span class="day-tag" id="tag-m${mIndex}-d${d}">-</span>
                     </div>
                 `;
             }
+
+            calendarHTML += `</div>`;
 
             card.innerHTML = `
                 <div class="month-header" onclick="toggleMonth(${mIndex})">
@@ -345,13 +449,11 @@
                     <span id="arrow-${mIndex}">▼</span>
                 </div>
                 <div class="month-body">
-                    <div style="margin-bottom:10px; display:flex; gap:10px;">
+                    <div style="margin-bottom:12px; display:flex; gap:10px;">
                         <button class="btn-small" onclick="fillMonthWorkdays(${mIndex})">Compila Lun-Ven (Std)</button>
                         <button class="btn-small" onclick="clearMonth(${mIndex})">Azzera Mese</button>
                     </div>
-                    <div class="month-days-grid">
-                        ${daysHTML}
-                    </div>
+                    ${calendarHTML}
                 </div>
             `;
 
@@ -386,17 +488,24 @@
         const year = parseInt(yearSelect.value);
         const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
         const standardLimit = parseFloat(document.getElementById('standardHours').value) || 0;
-        const overtimeBonus = parseFloat(document.getElementById('overtimeBonus').value) || 0;
-        const overtimeRate = hourlyRate * (1 + (overtimeBonus / 100));
+        const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
+        const weekendOvertimeRate = parseFloat(document.getElementById('weekendOvertimeRate').value) || 0;
+        const forfaitThreshold = parseFloat(document.getElementById('forfaitThreshold').value) || 0;
 
         let yearStdHrs = 0;
         let yearExtHrs = 0;
+        let yearPaidExtHrs = 0;
+        let yearBasePay = 0;
+        let yearExtPay = 0;
 
         monthNames.forEach((_, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
             let monthStdHrs = 0;
             let monthExtHrs = 0;
             const monthState = {};
+
+            // Lista per tracciare ogni singola ora extra del mese ed applicare la regola forfait
+            const overtimeEntries = [];
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const input = document.getElementById(`m-${mIndex}-d-${d}`);
@@ -405,7 +514,9 @@
                 const hours = parseFloat(input.value) || 0;
                 monthState[d] = input.value;
 
-                const infoSpan = document.getElementById(`m-${mIndex}-info-${d}`);
+                const dateObj = new Date(year, mIndex, d);
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
                 if (hours > 0) {
                     if (hours > standardLimit) {
@@ -413,37 +524,81 @@
                         const ext = hours - standardLimit;
                         monthStdHrs += std;
                         monthExtHrs += ext;
-                        infoSpan.innerText = `+${ext}h`;
-                        infoSpan.style.color = "var(--danger-color)";
+
+                        overtimeEntries.push({
+                            day: d,
+                            hours: ext,
+                            isWeekend: isWeekend
+                        });
                     } else {
                         monthStdHrs += hours;
-                        infoSpan.innerText = "OK";
-                        infoSpan.style.color = "var(--text-muted)";
+                        updateDayTag(mIndex, d, "OK", "var(--text-muted)");
                     }
                 } else {
-                    infoSpan.innerText = "-";
-                    infoSpan.style.color = "var(--text-muted)";
+                    updateDayTag(mIndex, d, "-", "var(--text-muted)");
                 }
             }
 
-            const monthTotalPay = (monthStdHrs * hourlyRate) + (monthExtHrs * overtimeRate);
+            // Calcolo Straordinari del mese considerando il Forfait
+            let accumulatedOvertime = 0;
+            let monthPaidExtPay = 0;
+            let monthPaidExtHrs = 0;
+
+            overtimeEntries.forEach(entry => {
+                let paidHoursInThisEntry = 0;
+                let forfaitHoursInThisEntry = 0;
+
+                for (let h = 0; h < entry.hours; h += 0.5) {
+                    accumulatedOvertime += 0.5;
+                    if (accumulatedOvertime > forfaitThreshold) {
+                        paidHoursInThisEntry += 0.5;
+                    } else {
+                        forfaitHoursInThisEntry += 0.5;
+                    }
+                }
+
+                monthPaidExtHrs += paidHoursInThisEntry;
+                const rate = entry.isWeekend ? weekendOvertimeRate : weekdayOvertimeRate;
+                monthPaidExtPay += (paidHoursInThisEntry * rate);
+
+                // Aggiorna l'etichetta del giorno
+                if (paidHoursInThisEntry > 0) {
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--danger-color)");
+                } else {
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)");
+                }
+            });
+
+            const monthBasePay = monthStdHrs * hourlyRate;
+            const monthTotalPay = monthBasePay + monthPaidExtPay;
+
             document.getElementById(`badge-total-${mIndex}`).innerText = `${monthStdHrs + monthExtHrs}h | ${monthTotalPay.toFixed(2)} €`;
 
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
+            yearPaidExtHrs += monthPaidExtHrs;
+            yearBasePay += monthBasePay;
+            yearExtPay += monthPaidExtPay;
 
             saveData(year, mIndex, monthState);
         });
 
-        const yearBasePay = yearStdHrs * hourlyRate;
-        const yearExtPay = yearExtHrs * overtimeRate;
         const yearGrandTotal = yearBasePay + yearExtPay;
 
         document.getElementById('yearStdHours').innerText = `${yearStdHrs.toFixed(1)} h`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs.toFixed(1)} h`;
+        document.getElementById('yearPaidExtHours').innerText = `${yearPaidExtHrs.toFixed(1)} h`;
         document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
         document.getElementById('yearExtPay').innerText = `+${yearExtPay.toFixed(2)} €`;
         document.getElementById('yearGrandTotal').innerText = `${yearGrandTotal.toFixed(2)} €`;
+    }
+
+    function updateDayTag(mIndex, day, text, color) {
+        const tag = document.getElementById(`tag-m${mIndex}-d${day}`);
+        if (tag) {
+            tag.innerText = text;
+            tag.style.color = color;
+        }
     }
 
     function fillMonthWorkdays(mIndex) {
