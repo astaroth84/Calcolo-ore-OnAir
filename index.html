@@ -684,7 +684,7 @@
                     <input type="number" id="monthlySalary" value="2573.00" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="weekdayOvertimeRate">Extra Feriale (€/h Lordo)</label>
+                    <label for="weekdayOvertimeRate">Extra Feriale Lun-Ven (€/h Lordo)</label>
                     <input type="number" id="weekdayOvertimeRate" value="17.61" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
@@ -700,7 +700,7 @@
                     <input type="number" id="nightRate" value="22.50" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="forfaitThreshold">Soglia Forfait Mensile (Ore)</label>
+                    <label for="forfaitThreshold">Soglia Forfait Mensile Feriale (Ore)</label>
                     <input type="number" id="forfaitThreshold" value="20" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
@@ -737,7 +737,7 @@
                 <span id="yearNightHours" style="color: var(--night-color);">0 h</span>
             </div>
             <div class="summary-row">
-                <span>Ore Extra Pagate Oltre Forfait:</span>
+                <span>Ore Extra Feriali Pagate (> Forfait):</span>
                 <span id="yearPaidExtHours" style="color: var(--success-color);">0 h</span>
             </div>
             <div class="summary-row">
@@ -951,7 +951,7 @@
                         <span id="summary-night-${mIndex}" style="color: var(--night-color);">0 h</span>
                     </div>
                     <div class="summary-row">
-                        <span>Ore Extra Pagate (> Forfait):</span>
+                        <span>Ore Extra Pagate (> Forfait Feriale):</span>
                         <span id="summary-paid-ext-${mIndex}" style="color: var(--success-color);">0 h</span>
                     </div>
                     <div class="summary-row">
@@ -1059,44 +1059,50 @@
                 }
             }
 
-            let accumulatedOvertime = 0;
+            let accumulatedWeekdayOvertime = 0;
             let monthPaidExtPay = 0;
             let monthPaidExtHrs = 0;
 
             overtimeEntries.forEach(entry => {
                 let paidHoursInThisEntry = 0;
-
-                for (let h = 0; h < entry.hours; h += 1) {
-                    accumulatedOvertime += 1;
-                    if (accumulatedOvertime > forfaitThreshold) {
-                        paidHoursInThisEntry += 1;
-                    }
-                }
-
-                monthPaidExtHrs += paidHoursInThisEntry;
-
-                // Selezione Tariffa Straordinario Specifica (Feriale, Sabato, Domenica/Festivo)
                 let rate = weekdayOvertimeRate;
+
+                // SE É SABATO O DOMENICA: FUORI FORFAIT -> PAGATE TUTTE AL 100%
                 if (entry.dayOfWeek === 6) {
                     rate = saturdayOvertimeRate;
+                    paidHoursInThisEntry = entry.hours;
+                    monthPaidExtHrs += paidHoursInThisEntry;
                 } else if (entry.dayOfWeek === 0) {
                     rate = sundayOvertimeRate;
+                    paidHoursInThisEntry = entry.hours;
+                    monthPaidExtHrs += paidHoursInThisEntry;
+                } else {
+                    // FERIALE LUN-VEN: APPLICA SOGLIA FORFAIT
+                    for (let h = 0; h < entry.hours; h += 1) {
+                        accumulatedWeekdayOvertime += 1;
+                        if (accumulatedWeekdayOvertime > forfaitThreshold) {
+                            paidHoursInThisEntry += 1;
+                        }
+                    }
+                    monthPaidExtHrs += paidHoursInThisEntry;
                 }
 
                 monthPaidExtPay += (paidHoursInThisEntry * rate);
 
                 const nightHours = parseInt(document.getElementById(`val-m${mIndex}-d${entry.day}-night`).innerText) || 0;
-                let tagTxt = paidHoursInThisEntry > 0 ? `+${entry.hours}h (€)` : `+${entry.hours}h (Forfait)`;
+                
+                let isPaidDirectly = (entry.dayOfWeek === 0 || entry.dayOfWeek === 6 || paidHoursInThisEntry > 0);
+                let tagTxt = isPaidDirectly ? `+${entry.hours}h (€)` : `+${entry.hours}h (Forfait)`;
                 if (nightHours > 0) tagTxt += ` | +${nightHours}h Notte`;
 
-                updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
+                updateDayTag(mIndex, entry.day, tagTxt, isPaidDirectly ? "var(--success-color)" : "var(--warning-color)");
             });
 
             // Calcolo importo notturno
             const monthNightPay = monthNightHrs * nightRate;
             const totalExtraAndNightPay = monthPaidExtPay + monthNightPay;
 
-            // Calcolo dello Stipendio Base Proporzionato ai giorni lavorati nel mese
+            // Stipendio Base Proporzionato ai giorni lavorati
             const dailyBaseRate = totalWorkDaysInMonth > 0 ? (monthlySalary / totalWorkDaysInMonth) : 0;
             const monthBasePay = Math.min(monthlySalary, monthWorkedDays * dailyBaseRate);
 
