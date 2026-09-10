@@ -354,7 +354,6 @@
             box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        /* --- LAYOUT AD AGENDA FEED --- */
         .days-feed-container {
             display: flex;
             flex-direction: column;
@@ -447,7 +446,6 @@
             flex-wrap: wrap;
         }
 
-        /* --- CONTROLLI AD ALTO RISALTO VISIVO (NEON & 3D) --- */
         .ctrl-pill-group {
             display: flex;
             align-items: center;
@@ -457,7 +455,6 @@
             transition: all 0.2s ease;
         }
 
-        /* Variazioni Categoria ORD (Azzurro Neon) */
         .ctrl-pill-group.ord-group {
             background: rgba(56, 189, 248, 0.08);
             border: 1px solid rgba(56, 189, 248, 0.3);
@@ -467,7 +464,6 @@
             text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
         }
 
-        /* Variazioni Categoria EXTRA (Giallo/Ambra) */
         .ctrl-pill-group.extra-group {
             background: rgba(251, 191, 36, 0.08);
             border: 1px solid rgba(251, 191, 36, 0.35);
@@ -477,7 +473,6 @@
             text-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
         }
 
-        /* Variazioni Categoria NOTT (Viola Neon) */
         .ctrl-pill-group.night-group {
             background: rgba(192, 132, 252, 0.08);
             border: 1px solid rgba(192, 132, 252, 0.35);
@@ -494,7 +489,6 @@
             letter-spacing: 0.8px;
         }
 
-        /* Tasti + e - con Rilievo 3D e Ombre */
         .btn-touch {
             background: linear-gradient(180deg, #2a374a 0%, #151d2a 100%);
             color: #ffffff;
@@ -686,7 +680,7 @@
             <h2 style="font-size: 0.95rem; color: var(--accent-color); margin-bottom: 12px; letter-spacing: 0.5px;">Dati Master da Cedolino (On Air Multimedia)</h2>
             <div class="grid-config">
                 <div class="input-group">
-                    <label for="monthlySalary">Stipendio Base Lordo (€)</label>
+                    <label for="monthlySalary">Stipendio Base Mensile (€)</label>
                     <input type="number" id="monthlySalary" value="2573.00" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
@@ -694,8 +688,12 @@
                     <input type="number" id="weekdayOvertimeRate" value="17.61" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="weekendOvertimeRate">Extra Festivo/Sab/Dom (€/h Lordo)</label>
-                    <input type="number" id="weekendOvertimeRate" value="19.91" step="0.1" oninput="calculateAll()">
+                    <label for="saturdayOvertimeRate">Extra Sabato (€/h Lordo)</label>
+                    <input type="number" id="saturdayOvertimeRate" value="19.91" step="0.1" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
+                    <label for="sundayOvertimeRate">Extra Domenica / Festivi (€/h Lordo)</label>
+                    <input type="number" id="sundayOvertimeRate" value="21.50" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
                     <label for="nightRate">Extra Notturno (€/h Lordo)</label>
@@ -723,6 +721,10 @@
         <div class="summary-box">
             <h2 style="font-size: 1.05rem; color: var(--accent-color); margin-bottom: 12px; text-shadow: 0 0 8px var(--accent-glow);">Bilancio Complessivo Anno</h2>
             <div class="summary-row">
+                <span>Giornate Lavorate Totali Annue:</span>
+                <span id="yearWorkDays">0 giorni</span>
+            </div>
+            <div class="summary-row">
                 <span>Totale Ore Ordinarie Annue:</span>
                 <span id="yearStdHours">0 h</span>
             </div>
@@ -739,7 +741,7 @@
                 <span id="yearPaidExtHours" style="color: var(--success-color);">0 h</span>
             </div>
             <div class="summary-row">
-                <span>Stipendio Base Lordo Annuo:</span>
+                <span>Stipendio Base Proporzionato Maturato:</span>
                 <span id="yearBasePay">0.00 €</span>
             </div>
             <div class="summary-row">
@@ -851,6 +853,16 @@
         }
     }
 
+    function getWorkingDaysInMonth(year, monthIndex) {
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        let workDays = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const day = new Date(year, monthIndex, d).getDay();
+            if (day !== 0 && day !== 6) workDays++;
+        }
+        return workDays;
+    }
+
     function buildYearGrid() {
         const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
@@ -923,6 +935,10 @@
 
                 <div class="summary-box">
                     <div class="summary-row">
+                        <span>Giornate Lavorate Effettive:</span>
+                        <span id="summary-worked-days-${mIndex}">0 / 0 giorni</span>
+                    </div>
+                    <div class="summary-row">
                         <span>Ore Ordinarie Totali:</span>
                         <span id="summary-std-${mIndex}">0 h</span>
                     </div>
@@ -939,7 +955,7 @@
                         <span id="summary-paid-ext-${mIndex}" style="color: var(--success-color);">0 h</span>
                     </div>
                     <div class="summary-row">
-                        <span>Stipendio Base Lordo:</span>
+                        <span>Stipendio Base Proporzionato:</span>
                         <span id="summary-base-pay-${mIndex}">0.00 €</span>
                     </div>
                     <div class="summary-row">
@@ -983,11 +999,13 @@
         const year = parseInt(yearSelect.value);
         const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
         const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
-        const weekendOvertimeRate = parseFloat(document.getElementById('weekendOvertimeRate').value) || 0;
+        const saturdayOvertimeRate = parseFloat(document.getElementById('saturdayOvertimeRate').value) || 0;
+        const sundayOvertimeRate = parseFloat(document.getElementById('sundayOvertimeRate').value) || 0;
         const nightRate = parseFloat(document.getElementById('nightRate').value) || 0;
         const forfaitThreshold = parseFloat(document.getElementById('forfaitThreshold').value) || 0;
         const taxRate = (parseFloat(document.getElementById('taxDeductionRate').value) || 0) / 100;
 
+        let yearWorkedDays = 0;
         let yearStdHrs = 0;
         let yearExtHrs = 0;
         let yearNightHrs = 0;
@@ -997,6 +1015,9 @@
 
         monthNames.forEach((_, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+            const totalWorkDaysInMonth = getWorkingDaysInMonth(year, mIndex);
+            
+            let monthWorkedDays = 0;
             let monthStdHrs = 0;
             let monthExtHrs = 0;
             let monthNightHrs = 0;
@@ -1013,19 +1034,22 @@
                 const extHours = parseInt(elExt.innerText) || 0;
                 const nightHours = parseInt(elNight.innerText) || 0;
 
+                if (ordHours > 0 || extHours > 0 || nightHours > 0) {
+                    monthWorkedDays++;
+                }
+
                 monthStdHrs += ordHours;
                 monthNightHrs += nightHours;
 
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
-                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
                 if (extHours > 0) {
                     monthExtHrs += extHours;
                     overtimeEntries.push({
                         day: d,
                         hours: extHours,
-                        isWeekend: isWeekend
+                        dayOfWeek: dayOfWeek
                     });
                 } else {
                     let tagParts = [];
@@ -1050,7 +1074,15 @@
                 }
 
                 monthPaidExtHrs += paidHoursInThisEntry;
-                const rate = entry.isWeekend ? weekendOvertimeRate : weekdayOvertimeRate;
+
+                // Selezione Tariffa Straordinario Specifica (Feriale, Sabato, Domenica/Festivo)
+                let rate = weekdayOvertimeRate;
+                if (entry.dayOfWeek === 6) {
+                    rate = saturdayOvertimeRate;
+                } else if (entry.dayOfWeek === 0) {
+                    rate = sundayOvertimeRate;
+                }
+
                 monthPaidExtPay += (paidHoursInThisEntry * rate);
 
                 const nightHours = parseInt(document.getElementById(`val-m${mIndex}-d${entry.day}-night`).innerText) || 0;
@@ -1060,12 +1092,19 @@
                 updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
             });
 
+            // Calcolo importo notturno
             const monthNightPay = monthNightHrs * nightRate;
             const totalExtraAndNightPay = monthPaidExtPay + monthNightPay;
 
-            const monthBasePay = (monthStdHrs > 0 || monthExtHrs > 0 || monthNightHrs > 0) ? monthlySalary : 0;
+            // Calcolo dello Stipendio Base Proporzionato ai giorni lavorati nel mese
+            const dailyBaseRate = totalWorkDaysInMonth > 0 ? (monthlySalary / totalWorkDaysInMonth) : 0;
+            const monthBasePay = Math.min(monthlySalary, monthWorkedDays * dailyBaseRate);
+
             const monthGrossTotal = monthBasePay + totalExtraAndNightPay;
             const monthNetTotal = monthGrossTotal * (1 - taxRate);
+
+            const elDays = document.getElementById(`summary-worked-days-${mIndex}`);
+            if (elDays) elDays.innerText = `${monthWorkedDays} / ${totalWorkDaysInMonth} giorni`;
 
             const elStd = document.getElementById(`summary-std-${mIndex}`);
             if (elStd) elStd.innerText = `${monthStdHrs} h`;
@@ -1091,6 +1130,7 @@
             const elNet = document.getElementById(`summary-net-${mIndex}`);
             if (elNet) elNet.innerText = `${monthNetTotal.toFixed(2)} €`;
 
+            yearWorkedDays += monthWorkedDays;
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
             yearNightHrs += monthNightHrs;
@@ -1102,6 +1142,7 @@
         const yearGrossTotal = yearBasePay + yearExtPay;
         const yearNetTotal = yearGrossTotal * (1 - taxRate);
 
+        document.getElementById('yearWorkDays').innerText = `${yearWorkedDays} giorni`;
         document.getElementById('yearStdHours').innerText = `${yearStdHrs} h`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs} h`;
         document.getElementById('yearNightHours').innerText = `${yearNightHrs} h`;
