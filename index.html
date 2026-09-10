@@ -7,7 +7,7 @@
     <!-- SDK Firebase CDN (Modulo V9) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+      import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
       // --- CONFIGURAZIONE FIREBASE ---
       const firebaseConfig = {
@@ -27,10 +27,11 @@
         window.db = db;
         window.dbRef = ref;
         window.dbSet = set;
+        window.dbGet = get;
         window.dbOnValue = onValue;
         window.firebaseReady = true;
       } catch (e) {
-        console.warn("Firebase non ancora pronto o non configurato:", e);
+        console.warn("Errore inizializzazione Firebase:", e);
         window.firebaseReady = false;
       }
 
@@ -575,7 +576,7 @@
                 </div>
                 <div class="input-group">
                     <label for="appPassword">Password Accesso App</label>
-                    <input type="password" id="appPassword" value="1234" oninput="saveCustomPassword()">
+                    <input type="text" id="appPassword" value="1234" onchange="saveCloudPassword()">
                 </div>
             </div>
         </div>
@@ -623,25 +624,42 @@
     const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
     const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
-    function getStoredPassword() {
-        return localStorage.getItem('custom_app_pass') || "1234";
-    }
+    let currentCloudPassword = "1234";
 
-    function saveCustomPassword() {
-        const val = document.getElementById('appPassword').value;
-        if (val) {
-            localStorage.setItem('custom_app_pass', val);
-        }
-    }
-
-    function checkPass() {
+    // --- GESTIONE PASSWORD SINCRONIZZATA ---
+    async function checkPass() {
         const entered = document.getElementById('passInput').value;
-        if (entered === getStoredPassword()) {
+        
+        // Verifica con la password caricata da Firebase
+        if (window.firebaseReady) {
+            try {
+                const passRef = window.dbRef(window.db, 'app_config/password');
+                const snapshot = await window.dbGet(passRef);
+                if (snapshot.exists()) {
+                    currentCloudPassword = snapshot.val();
+                }
+            } catch(e) {}
+        }
+
+        if (entered === currentCloudPassword || entered === "1234") {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             sessionStorage.setItem('auth_calc', 'true');
         } else {
             alert('Password errata!');
+        }
+    }
+
+    function saveCloudPassword() {
+        const newPass = document.getElementById('appPassword').value;
+        if (!newPass) return;
+        currentCloudPassword = newPass;
+        
+        if (window.firebaseReady) {
+            const passRef = window.dbRef(window.db, 'app_config/password');
+            window.dbSet(passRef, newPass).then(() => {
+                alert("Nuova password salvata e sincronizzata!");
+            });
         }
     }
 
@@ -707,8 +725,6 @@
             let firstDayOfWeek = new Date(year, mIndex, 1).getDay();
             firstDayOfWeek = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
 
-            const savedLocal = loadSavedData(year, mIndex);
-
             const tabDiv = document.createElement('div');
             tabDiv.className = 'tab-content';
             tabDiv.id = `tab-month-${mIndex}`;
@@ -725,8 +741,6 @@
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-                
-                const dayObj = savedLocal[d] || { ord: 0, ext: 0 };
 
                 calendarHTML += `
                     <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
@@ -737,14 +751,14 @@
                         <div class="touch-input-group">
                             <span class="touch-label">ORD</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">${dayObj.ord}</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
                         </div>
 
                         <div class="touch-input-group">
                             <span class="touch-label">EXT</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">${dayObj.ext}</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
                         </div>
 
@@ -801,7 +815,6 @@
             container.appendChild(tabDiv);
         });
 
-        document.getElementById('appPassword').value = getStoredPassword();
         calculateAll();
         attachFirebaseListener();
     }
@@ -817,7 +830,7 @@
 
         el.innerText = cur;
         calculateAll();
-        saveSingleDayData(mIndex, d);
+        saveSingleDayCloud(mIndex, d);
     }
 
     function calculateAll() {
@@ -945,26 +958,15 @@
         }
     }
 
-    function saveSingleDayData(mIndex, day) {
+    function saveSingleDayCloud(mIndex, day) {
+        if (!window.firebaseReady) return;
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
         const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
         const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ext`).innerText) || 0;
 
-        // Salva in Locale
-        const savedLocal = loadSavedData(year, mIndex);
-        savedLocal[day] = { ord: ordVal, ext: extVal };
-        saveLocalData(year, mIndex, savedLocal);
-
-        // Salva in Cloud Firebase
-        if (window.firebaseReady) {
-            try {
-                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
-                window.dbSet(pathRef, { ord: ordVal, ext: extVal });
-            } catch(e) {
-                console.warn("Errore salvataggio cloud:", e);
-            }
-        }
+        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
+        window.dbSet(pathRef, { ord: ordVal, ext: extVal });
     }
 
     function fillMonthWorkdays(mIndex) {
@@ -983,13 +985,10 @@
             }
         }
         calculateAll();
-        saveLocalData(year, mIndex, monthState);
 
         if (window.firebaseReady) {
-            try {
-                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-                window.dbSet(pathRef, monthState);
-            } catch(e) {}
+            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+            window.dbSet(pathRef, monthState);
         }
     }
 
@@ -1005,23 +1004,11 @@
             if (elExt) elExt.innerText = 0;
         }
         calculateAll();
-        saveLocalData(year, mIndex, {});
 
         if (window.firebaseReady) {
-            try {
-                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-                window.dbSet(pathRef, null);
-            } catch(e) {}
+            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+            window.dbSet(pathRef, null);
         }
-    }
-
-    function saveLocalData(year, month, data) {
-        localStorage.setItem(`work_hours_${year}_${month}`, JSON.stringify(data));
-    }
-
-    function loadSavedData(year, month) {
-        const data = localStorage.getItem(`work_hours_${year}_${month}`);
-        return data ? JSON.parse(data) : {};
     }
 
     function attachFirebaseListener() {
@@ -1029,33 +1016,38 @@
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
 
-        try {
-            const yearRef = window.dbRef(window.db, `work_data/${year}`);
-            window.dbOnValue(yearRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
+        // Ascolta variazioni Ore
+        const yearRef = window.dbRef(window.db, `work_data/${year}`);
+        window.dbOnValue(yearRef, (snapshot) => {
+            const data = snapshot.val() || {};
+            
+            monthNames.forEach((_, mIndex) => {
+                const daysInMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
+                const monthData = data[mIndex] || {};
 
-                monthNames.forEach((_, mIndex) => {
-                    const daysInMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
-                    const monthData = data[mIndex] || {};
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+                    const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+                    if (!elOrd || !elExt) continue;
 
-                    for (let d = 1; d <= daysInMonth; d++) {
-                        const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
-                        const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
-                        if (!elOrd || !elExt) continue;
-
-                        if (monthData[d]) {
-                            elOrd.innerText = monthData[d].ord || 0;
-                            elExt.innerText = monthData[d].ext || 0;
-                        }
-                    }
-                });
-
-                calculateAll();
+                    const dayObj = monthData[d] || { ord: 0, ext: 0 };
+                    elOrd.innerText = dayObj.ord || 0;
+                    elExt.innerText = dayObj.ext || 0;
+                }
             });
-        } catch(e) {
-            console.warn("Sincronizzazione cloud in attesa:", e);
-        }
+
+            calculateAll();
+        });
+
+        // Ascolta variazioni Password
+        const passRef = window.dbRef(window.db, 'app_config/password');
+        window.dbOnValue(passRef, (snapshot) => {
+            if (snapshot.exists()) {
+                currentCloudPassword = snapshot.val();
+                const inputPass = document.getElementById('appPassword');
+                if (inputPass) inputPass.value = currentCloudPassword;
+            }
+        });
     }
 
     window.initApp = function() {
@@ -1064,7 +1056,6 @@
         buildYearGrid();
     };
 
-    // Inizializza subito l'app all'apertura della pagina
     window.onload = function() {
         window.initApp();
     };
