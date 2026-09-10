@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore Ore e Straordinari</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --danger-color: #f43f5e;
+            --success-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .days-container {
+            margin-bottom: 25px;
+        }
+
+        .day-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+        }
+
+        .day-row:last-child {
+            border-bottom: none;
+        }
+
+        .day-label {
+            font-weight: 600;
+            width: 100px;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calcolo Ore & Straordinari</h1>
+
+    <!-- Impostazioni Base -->
+    <div class="grid-config">
+        <div class="input-group">
+            <label for="hourlyRate">Paga Oraria Base (€)</label>
+            <input type="number" id="hourlyRate" value="12" step="0.5" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="standardHours">Ore Standard / Giorno</label>
+            <input type="number" id="standardHours" value="8" step="0.5" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label for="overtimeBonus">Maggiorazione Extra (%)</label>
+            <input type="number" id="overtimeBonus" value="30" step="1" oninput="calculate()">
+        </div>
+    </div>
+
+    <!-- Inserimento Ore Settimanali -->
+    <div class="days-container" id="daysList">
+        <!-- Generato dinamicamente da JS -->
+    </div>
+
+    <!-- Riepilogo Calcoli -->
+    <div class="summary-box">
+        <div class="summary-row">
+            <span>Ore Ordinarie Totali:</span>
+            <span id="totalStandardHours">0 hrs</span>
+        </div>
+        <div class="summary-row">
+            <span>Ore Extra / Straordinari:</span>
+            <span id="totalOvertimeHours" style="color: var(--danger-color);">0 hrs</span>
+        </div>
+        <div class="summary-row">
+            <span>Compenso Base:</span>
+            <span id="basePay">0.00 €</span>
+        </div>
+        <div class="summary-row">
+            <span>Compenso Extra:</span>
+            <span id="overtimePay" style="color: var(--success-color);">+0.00 €</span>
+        </div>
+        <div class="summary-row total">
+            <span>Totale Guadagno:</span>
+            <span id="grandTotal">0.00 €</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const days = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+
+    // Inizializza i giorni
+    function initDays() {
+        const container = document.getElementById('daysList');
+        container.innerHTML = '';
+
+        days.forEach((day, index) => {
+            const row = document.createElement('div');
+            row.className = 'day-row';
+            row.innerHTML = `
+                <span class="day-label">${day}</span>
+                <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                    <label>Ore lavorate:</label>
+                    <input type="number" class="day-input" id="day-${index}" value="${index < 5 ? 8 : 0}" min="0" max="24" step="0.5" oninput="calculate()" style="width: 80px; text-align: center;">
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    // Funzione principale di calcolo
+    function calculate() {
+        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+        const standardLimit = parseFloat(document.getElementById('standardHours').value) || 0;
+        const overtimeBonus = parseFloat(document.getElementById('overtimeBonus').value) || 0;
+
+        const overtimeRate = hourlyRate * (1 + (overtimeBonus / 100));
+
+        let totalStandardHrs = 0;
+        let totalOvertimeHrs = 0;
+
+        for (let i = 0; i < days.length; i++) {
+            const hours = parseFloat(document.getElementById(`day-${i}`).value) || 0;
+
+            if (hours > standardLimit) {
+                totalStandardHrs += standardLimit;
+                totalOvertimeHrs += (hours - standardLimit);
+            } else {
+                totalStandardHrs += hours;
+            }
+        }
+
+        const basePay = totalStandardHrs * hourlyRate;
+        const overtimePay = totalOvertimeHrs * overtimeRate;
+        const grandTotal = basePay + overtimePay;
+
+        // Aggiorna la GUI
+        document.getElementById('totalStandardHours').innerText = `${totalStandardHrs.toFixed(1)} h`;
+        document.getElementById('totalOvertimeHours').innerText = `${totalOvertimeHrs.toFixed(1)} h`;
+        document.getElementById('basePay').innerText = `${basePay.toFixed(2)} €`;
+        document.getElementById('overtimePay').innerText = `+${overtimePay.toFixed(2)} €`;
+        document.getElementById('grandTotal').innerText = `${grandTotal.toFixed(2)} €`;
+    }
+
+    // Avvio iniziale
+    initDays();
+    calculate();
+</script>
+
+</body>
+</html>
