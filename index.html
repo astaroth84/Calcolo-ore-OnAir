@@ -206,11 +206,13 @@
             border-color: rgba(56, 189, 248, 0.3);
         }
 
+        /* NUMERO DEL GIORNO RENDERE PIÙ VISIBILE */
         .day-num {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffffff;
             align-self: flex-start;
+            padding-left: 2px;
         }
 
         .calendar-day.weekend .day-num {
@@ -324,6 +326,9 @@
             .touch-label {
                 font-size: 0.58rem;
             }
+            .day-num {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -391,7 +396,7 @@
             </div>
             <div class="summary-row">
                 <span>Ore Extra Pagate Oltre Forfait:</span>
-                <span id="yearPaidExtHours" style="color: var(--danger-color);">0 h</span>
+                <span id="yearPaidExtHours" style="color: var(--success-color);">0 h</span>
             </div>
             <div class="summary-row">
                 <span>Stipendio Base Lordo Annuo:</span>
@@ -541,7 +546,7 @@
                     </div>
                     <div class="summary-row">
                         <span>Ore Extra Pagate (> Forfait):</span>
-                        <span id="summary-paid-ext-${mIndex}" style="color: var(--danger-color);">0 h</span>
+                        <span id="summary-paid-ext-${mIndex}" style="color: var(--success-color);">0 h</span>
                     </div>
                     <div class="summary-row">
                         <span>Stipendio Base Lordo:</span>
@@ -649,10 +654,11 @@
                 const rate = entry.isWeekend ? weekendOvertimeRate : weekdayOvertimeRate;
                 monthPaidExtPay += (paidHoursInThisEntry * rate);
 
+                // COLORAZIONE RICHIESTA: GIALLO FINO A 20H, VERDE DALLA 21ª ORA IN POI
                 if (paidHoursInThisEntry > 0) {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--danger-color)");
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--success-color)"); // VERDE
                 } else {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)");
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)"); // GIALLO
                 }
             });
 
