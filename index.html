@@ -55,6 +55,8 @@
             --danger-color: #fb7185;
             --success-color: #34d399;
             --warning-color: #fbbf24;
+            --night-color: #a855f7;
+            --night-glow: rgba(168, 85, 247, 0.3);
             --weekend-bg: rgba(192, 132, 252, 0.08);
             --day-bg: rgba(15, 23, 42, 0.65);
         }
@@ -165,7 +167,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 1px rgba(255,255,255,0.1);
             padding: 16px;
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             border: 1px solid var(--border-glow);
             backdrop-filter: blur(16px);
         }
@@ -352,7 +354,7 @@
             box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        /* --- NUOVO LAYOUT AD AGENDA / FEED SLIM --- */
+        /* --- LAYOUT AD AGENDA FEED --- */
         .days-feed-container {
             display: flex;
             flex-direction: column;
@@ -441,7 +443,7 @@
         .day-controls-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -450,27 +452,36 @@
             align-items: center;
             background: rgba(6, 9, 17, 0.6);
             border-radius: 12px;
-            padding: 3px 6px;
+            padding: 3px 5px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 6px;
+            gap: 4px;
+        }
+
+        .ctrl-pill-group.night-group {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.05);
         }
 
         .ctrl-pill-label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
             font-weight: 900;
-            padding: 0 4px;
+            padding: 0 3px;
             letter-spacing: 0.5px;
+        }
+
+        .ctrl-pill-group.night-group .ctrl-pill-label {
+            color: var(--night-color);
         }
 
         .btn-touch {
             background: rgba(30, 41, 59, 0.9);
             color: #ffffff;
             border: 1px solid rgba(71, 85, 105, 0.6);
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            font-size: 1.2rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 1.1rem;
             font-weight: 900;
             display: flex;
             align-items: center;
@@ -490,9 +501,9 @@
         }
 
         .touch-val {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 900;
-            width: 26px;
+            width: 22px;
             text-align: center;
             color: #ffffff;
         }
@@ -531,7 +542,7 @@
             margin-top: 6px;
         }
 
-        @media (max-width: 580px) {
+        @media (max-width: 620px) {
             body {
                 padding: 4px;
             }
@@ -558,41 +569,32 @@
                 font-size: 0.85rem;
             }
             .day-card-row {
-                padding: 8px 10px;
-                gap: 6px;
+                padding: 8px;
+                gap: 4px;
+                flex-direction: column;
+                align-items: stretch;
             }
             .day-info-left {
-                min-width: 90px;
-                gap: 8px;
-            }
-            .day-num-circle {
-                width: 32px;
-                height: 32px;
-                font-size: 0.95rem;
-                border-radius: 8px;
-            }
-            .day-name-label {
-                font-size: 0.8rem;
+                justify-content: space-between;
+                min-width: 100%;
             }
             .day-controls-right {
-                gap: 6px;
+                justify-content: space-between;
+                gap: 4px;
+                margin-top: 4px;
             }
             .ctrl-pill-group {
-                padding: 2px 4px;
-                gap: 2px;
+                flex: 1;
+                justify-content: space-between;
             }
             .btn-touch {
-                width: 30px;
-                height: 30px;
-                font-size: 1rem;
-                border-radius: 8px;
+                width: 28px;
+                height: 28px;
+                font-size: 0.95rem;
             }
             .touch-val {
-                font-size: 0.88rem;
-                width: 18px;
-            }
-            .ctrl-pill-label {
-                font-size: 0.58rem;
+                font-size: 0.85rem;
+                width: 16px;
             }
         }
     </style>
@@ -649,6 +651,10 @@
                     <input type="number" id="weekendOvertimeRate" value="19.91" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
+                    <label for="nightRate">Extra Notturno (€/h Lordo)</label>
+                    <input type="number" id="nightRate" value="22.50" step="0.1" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
                     <label for="forfaitThreshold">Soglia Forfait Mensile (Ore)</label>
                     <input type="number" id="forfaitThreshold" value="20" step="1" oninput="calculateAll()">
                 </div>
@@ -678,6 +684,10 @@
                 <span id="yearExtHours" style="color: var(--warning-color);">0 h</span>
             </div>
             <div class="summary-row">
+                <span>Totale Ore Notturne Inserite:</span>
+                <span id="yearNightHours" style="color: var(--night-color);">0 h</span>
+            </div>
+            <div class="summary-row">
                 <span>Ore Extra Pagate Oltre Forfait:</span>
                 <span id="yearPaidExtHours" style="color: var(--success-color);">0 h</span>
             </div>
@@ -686,7 +696,7 @@
                 <span id="yearBasePay">0.00 €</span>
             </div>
             <div class="summary-row">
-                <span>Compenso Extra Lordo Pagato:</span>
+                <span>Compenso Extra/Notturno Lordo Pagato:</span>
                 <span id="yearExtPay" style="color: var(--warning-color);">+0.00 €</span>
             </div>
             <div class="summary-row total-gross">
@@ -839,6 +849,13 @@
                                 <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
                                 <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
                             </div>
+
+                            <div class="ctrl-pill-group night-group">
+                                <span class="ctrl-pill-label">NOTT</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'night', -1)">-</button>
+                                <span class="touch-val" id="val-m${mIndex}-d${d}-night">0</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'night', 1)">+</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -867,6 +884,10 @@
                         <span id="summary-ext-${mIndex}" style="color: var(--warning-color);">0 h</span>
                     </div>
                     <div class="summary-row">
+                        <span>Ore Notturne Inserite:</span>
+                        <span id="summary-night-${mIndex}" style="color: var(--night-color);">0 h</span>
+                    </div>
+                    <div class="summary-row">
                         <span>Ore Extra Pagate (> Forfait):</span>
                         <span id="summary-paid-ext-${mIndex}" style="color: var(--success-color);">0 h</span>
                     </div>
@@ -875,7 +896,7 @@
                         <span id="summary-base-pay-${mIndex}">0.00 €</span>
                     </div>
                     <div class="summary-row">
-                        <span>Compenso Extra Lordo:</span>
+                        <span>Compenso Extra/Notturno Lordo:</span>
                         <span id="summary-ext-pay-${mIndex}" style="color: var(--warning-color);">+0.00 €</span>
                     </div>
                     <div class="summary-row total-gross">
@@ -916,11 +937,13 @@
         const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
         const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
         const weekendOvertimeRate = parseFloat(document.getElementById('weekendOvertimeRate').value) || 0;
+        const nightRate = parseFloat(document.getElementById('nightRate').value) || 0;
         const forfaitThreshold = parseFloat(document.getElementById('forfaitThreshold').value) || 0;
         const taxRate = (parseFloat(document.getElementById('taxDeductionRate').value) || 0) / 100;
 
         let yearStdHrs = 0;
         let yearExtHrs = 0;
+        let yearNightHrs = 0;
         let yearPaidExtHrs = 0;
         let yearBasePay = 0;
         let yearExtPay = 0;
@@ -929,18 +952,22 @@
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
             let monthStdHrs = 0;
             let monthExtHrs = 0;
+            let monthNightHrs = 0;
 
             const overtimeEntries = [];
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                 const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
-                if (!elOrd || !elExt) continue;
+                const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
+                if (!elOrd || !elExt || !elNight) continue;
 
                 const ordHours = parseInt(elOrd.innerText) || 0;
                 const extHours = parseInt(elExt.innerText) || 0;
+                const nightHours = parseInt(elNight.innerText) || 0;
 
                 monthStdHrs += ordHours;
+                monthNightHrs += nightHours;
 
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
@@ -954,7 +981,10 @@
                         isWeekend: isWeekend
                     });
                 } else {
-                    updateDayTag(mIndex, d, ordHours > 0 ? "OK" : "-", "var(--text-muted)");
+                    let tagParts = [];
+                    if (ordHours > 0) tagParts.push("OK");
+                    if (nightHours > 0) tagParts.push(`+${nightHours}h Notte`);
+                    updateDayTag(mIndex, d, tagParts.length > 0 ? tagParts.join(" | ") : "-", nightHours > 0 ? "var(--night-color)" : "var(--text-muted)");
                 }
             }
 
@@ -976,15 +1006,19 @@
                 const rate = entry.isWeekend ? weekendOvertimeRate : weekdayOvertimeRate;
                 monthPaidExtPay += (paidHoursInThisEntry * rate);
 
-                if (paidHoursInThisEntry > 0) {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--success-color)");
-                } else {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)");
-                }
+                const nightHours = parseInt(document.getElementById(`val-m${mIndex}-d${entry.day}-night`).innerText) || 0;
+                let tagTxt = paidHoursInThisEntry > 0 ? `+${entry.hours}h (€)` : `+${entry.hours}h (Forfait)`;
+                if (nightHours > 0) tagTxt += ` | +${nightHours}h Notte`;
+
+                updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
             });
 
-            const monthBasePay = (monthStdHrs > 0 || monthExtHrs > 0) ? monthlySalary : 0;
-            const monthGrossTotal = monthBasePay + monthPaidExtPay;
+            // Calcolo importo notturno
+            const monthNightPay = monthNightHrs * nightRate;
+            const totalExtraAndNightPay = monthPaidExtPay + monthNightPay;
+
+            const monthBasePay = (monthStdHrs > 0 || monthExtHrs > 0 || monthNightHrs > 0) ? monthlySalary : 0;
+            const monthGrossTotal = monthBasePay + totalExtraAndNightPay;
             const monthNetTotal = monthGrossTotal * (1 - taxRate);
 
             const elStd = document.getElementById(`summary-std-${mIndex}`);
@@ -993,6 +1027,9 @@
             const elExt = document.getElementById(`summary-ext-${mIndex}`);
             if (elExt) elExt.innerText = `${monthExtHrs} h`;
 
+            const elNightSum = document.getElementById(`summary-night-${mIndex}`);
+            if (elNightSum) elNightSum.innerText = `${monthNightHrs} h`;
+
             const elPaidExt = document.getElementById(`summary-paid-ext-${mIndex}`);
             if (elPaidExt) elPaidExt.innerText = `${monthPaidExtHrs} h`;
 
@@ -1000,7 +1037,7 @@
             if (elBasePay) elBasePay.innerText = `${monthBasePay.toFixed(2)} €`;
 
             const elExtPay = document.getElementById(`summary-ext-pay-${mIndex}`);
-            if (elExtPay) elExtPay.innerText = `+${monthPaidExtPay.toFixed(2)} €`;
+            if (elExtPay) elExtPay.innerText = `+${totalExtraAndNightPay.toFixed(2)} €`;
 
             const elGross = document.getElementById(`summary-gross-${mIndex}`);
             if (elGross) elGross.innerText = `${monthGrossTotal.toFixed(2)} €`;
@@ -1010,9 +1047,10 @@
 
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
+            yearNightHrs += monthNightHrs;
             yearPaidExtHrs += monthPaidExtHrs;
             yearBasePay += monthBasePay;
-            yearExtPay += monthPaidExtPay;
+            yearExtPay += totalExtraAndNightPay;
         });
 
         const yearGrossTotal = yearBasePay + yearExtPay;
@@ -1020,6 +1058,7 @@
 
         document.getElementById('yearStdHours').innerText = `${yearStdHrs} h`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs} h`;
+        document.getElementById('yearNightHours').innerText = `${yearNightHrs} h`;
         document.getElementById('yearPaidExtHours').innerText = `${yearPaidExtHrs} h`;
         document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
         document.getElementById('yearExtPay').innerText = `+${yearExtPay.toFixed(2)} €`;
@@ -1039,11 +1078,12 @@
         if (!window.firebaseReady) return;
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
-        const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${d}-ord`).innerText) || 0;
-        const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${d}-ext`).innerText) || 0;
+        const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
+        const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ext`).innerText) || 0;
+        const nightVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-night`).innerText) || 0;
 
         const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
-        window.dbSet(pathRef, { ord: ordVal, ext: extVal });
+        window.dbSet(pathRef, { ord: ordVal, ext: extVal, night: nightVal });
     }
 
     function fillMonthWorkdays(mIndex) {
@@ -1058,7 +1098,7 @@
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                 const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                 if (elOrd) elOrd.innerText = 8;
-                monthState[d] = { ord: 8, ext: 0 };
+                monthState[d] = { ord: 8, ext: 0, night: 0 };
             }
         }
         calculateAll();
@@ -1077,8 +1117,10 @@
         for (let d = 1; d <= daysInMonth; d++) {
             const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
             const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+            const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
             if (elOrd) elOrd.innerText = 0;
             if (elExt) elExt.innerText = 0;
+            if (elNight) elNight.innerText = 0;
         }
         calculateAll();
 
@@ -1104,11 +1146,13 @@
                 for (let d = 1; d <= daysInMonth; d++) {
                     const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                     const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
-                    if (!elOrd || !elExt) continue;
+                    const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
+                    if (!elOrd || !elExt || !elNight) continue;
 
-                    const dayObj = monthData[d] || { ord: 0, ext: 0 };
+                    const dayObj = monthData[d] || { ord: 0, ext: 0, night: 0 };
                     elOrd.innerText = dayObj.ord || 0;
                     elExt.innerText = dayObj.ext || 0;
+                    elNight.innerText = dayObj.night || 0;
                 }
             });
 
