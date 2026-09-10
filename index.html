@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calcolatore Ore & Straordinari</title>
+    <title>Calcolatore Ore & Straordinari - Santoro Carlo</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -50,22 +50,72 @@
             border: 1px solid var(--border-color);
         }
 
+        /* HEADER E LOGO ONAIR MULTIMEDIA */
         .header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 12px;
         }
 
-        h1 {
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-onair {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background: #000000;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            user-select: none;
+        }
+
+        .logo-onair .text-onair {
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: 1.5px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-onair .text-onair span {
+            color: var(--accent-color);
+        }
+
+        .logo-onair .text-multimedia {
+            color: #94a3b8;
+            font-size: 0.55rem;
+            letter-spacing: 2.5px;
+            text-transform: lowercase;
+            margin-top: 1px;
+            font-weight: 600;
+        }
+
+        .title-box h1 {
             font-size: 1.2rem;
             color: var(--accent-color);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            line-height: 1.1;
+        }
+
+        .title-box .subtitle-name {
+            font-size: 0.95rem;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
         }
 
         /* BARRA TAB EXCEL RESPONSIVE */
@@ -335,6 +385,24 @@
             .container {
                 padding: 6px;
             }
+            .header-left {
+                gap: 8px;
+            }
+            .logo-onair {
+                padding: 4px 8px;
+            }
+            .logo-onair .text-onair {
+                font-size: 1rem;
+            }
+            .logo-onair .text-multimedia {
+                font-size: 0.48rem;
+            }
+            .title-box h1 {
+                font-size: 1rem;
+            }
+            .title-box .subtitle-name {
+                font-size: 0.85rem;
+            }
             .calendar-grid, .calendar-weekdays {
                 grid-template-columns: repeat(7, minmax(0, 1fr));
                 gap: 2px;
@@ -362,7 +430,20 @@
 
 <div class="container">
     <div class="header-bar">
-        <h1>Calcolatore Ore & Straordinari</h1>
+        <div class="header-left">
+            <!-- LOGO ONAIR MULTIMEDIA -->
+            <div class="logo-onair">
+                <div class="text-onair">ON<span>AIR</span></div>
+                <div class="text-multimedia">multimedia</div>
+            </div>
+            
+            <!-- TITOLO E NOME SANTORO CARLO -->
+            <div class="title-box">
+                <h1>Calcolatore Ore & Straordinari</h1>
+                <div class="subtitle-name">Santoro Carlo</div>
+            </div>
+        </div>
+
         <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
             <label for="yearSelect">Anno:</label>
             <select id="yearSelect" onchange="buildYearGrid()"></select>
@@ -379,7 +460,7 @@
     <!-- TAB MASTER CONFIGURATO CON DATI CEDOLINO -->
     <div class="tab-content active" id="tab-master">
         <div class="master-panel">
-            <h2 style="font-size: 1rem; color: var(--accent-color); margin-bottom: 12px;">Dati Master da Cedolino</h2>
+            <h2 style="font-size: 1rem; color: var(--accent-color); margin-bottom: 12px;">Dati Master da Cedolino (On Air Multimedia)</h2>
             <div class="grid-config">
                 <div class="input-group">
                     <label for="monthlySalary">Stipendio Base Lordo (€)</label>
