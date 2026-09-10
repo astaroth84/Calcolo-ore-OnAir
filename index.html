@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calcolatore Ore & Straordinari</title>
     <style>
         :root {
@@ -16,7 +16,7 @@
             --danger-color: #f43f5e;
             --success-color: #10b981;
             --warning-color: #f59e0b;
-            --weekend-bg: rgba(56, 189, 248, 0.08);
+            --weekend-bg: rgba(56, 189, 248, 0.12);
             --day-bg: #0f172a;
             --tab-active-bg: #1e293b;
             --tab-inactive-bg: #0f172a;
@@ -26,7 +26,8 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -36,14 +37,14 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 12px;
+            padding: 8px;
         }
 
         .container {
             background-color: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            padding: 16px;
+            padding: 12px;
             width: 100%;
             max-width: 1200px;
             border: 1px solid var(--border-color);
@@ -53,29 +54,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
 
         h1 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--accent-color);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
-        /* BARRA TAB EXCEL */
+        /* BARRA TAB EXCEL RESPONSIVE */
         .tabs-bar {
             display: flex;
             gap: 4px;
             overflow-x: auto;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .tabs-bar::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
         }
 
         .tab-btn {
@@ -83,14 +89,15 @@
             color: var(--text-muted);
             border: 1px solid var(--border-color);
             border-bottom: none;
-            padding: 12px 18px;
+            padding: 10px 14px;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
+            font-size: 0.9rem;
+            font-weight: 700;
             white-space: nowrap;
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .tab-btn.active {
@@ -114,23 +121,23 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 18px;
+            padding: 14px;
         }
 
         .grid-config {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         label {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 600;
         }
@@ -139,29 +146,30 @@
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
         }
 
-        /* CALENDARIO & QUADRETTI */
+        /* CALENDARIO & QUADRETTI AUTO-RESPONSIVE */
         .actions-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
+            margin-bottom: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-small {
             background-color: var(--border-color);
             color: var(--text-color);
             border: none;
-            padding: 10px 16px;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
         }
 
@@ -169,31 +177,32 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             text-align: center;
-            font-weight: bold;
-            font-size: 0.85rem;
+            font-weight: 800;
+            font-size: 0.8rem;
             color: var(--accent-color);
-            margin-bottom: 8px;
-            padding-bottom: 6px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
             border-bottom: 1px solid var(--border-color);
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin-bottom: 20px;
+            gap: 5px;
+            margin-bottom: 15px;
         }
 
         .calendar-day {
             background: var(--day-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 6px 4px;
-            min-height: 115px;
+            padding: 4px;
+            min-height: 110px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
 
         .calendar-day.empty {
@@ -203,16 +212,24 @@
 
         .calendar-day.weekend {
             background: var(--weekend-bg);
-            border-color: rgba(56, 189, 248, 0.3);
+            border-color: rgba(56, 189, 248, 0.4);
         }
 
-        /* NUMERO DEL GIORNO RENDERE PIÙ VISIBILE */
-        .day-num {
-            font-size: 1rem;
-            font-weight: 800;
-            color: #ffffff;
+        /* NUMERO DEL GIORNO IPER-VISIBILE */
+        .day-num-badge {
             align-self: flex-start;
-            padding-left: 2px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 2px 7px;
+            border-radius: 5px;
+            margin-bottom: 3px;
+        }
+
+        .day-num {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .calendar-day.weekend .day-num {
@@ -225,16 +242,17 @@
             align-items: center;
             justify-content: space-between;
             width: 100%;
-            margin: 2px 0;
-            background: rgba(0,0,0,0.25);
+            margin: 1px 0;
+            background: rgba(0,0,0,0.35);
             border-radius: 6px;
             padding: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .touch-label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
-            font-weight: bold;
+            font-weight: 800;
             padding-left: 2px;
         }
 
@@ -242,11 +260,11 @@
             background: var(--border-color);
             color: var(--text-color);
             border: none;
-            width: 26px;
-            height: 26px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            font-size: 1.05rem;
+            font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -260,16 +278,17 @@
         }
 
         .touch-val {
-            font-size: 0.85rem;
-            font-weight: bold;
-            width: 22px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            width: 20px;
             text-align: center;
         }
 
         .day-tag {
             font-size: 0.65rem;
-            font-weight: bold;
+            font-weight: 800;
             text-align: center;
+            margin-top: 2px;
         }
 
         /* SUMMARY BOX */
@@ -277,57 +296,69 @@
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 1px solid var(--accent-color);
             border-radius: 12px;
-            padding: 18px;
+            padding: 14px;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
 
         .summary-row.total-gross {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             color: var(--text-color);
             border-top: 1px solid var(--border-color);
-            padding-top: 8px;
-            margin-top: 5px;
-        }
-
-        .summary-row.total-net {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--success-color);
-            border-top: 1px dashed var(--accent-color);
-            padding-top: 8px;
+            padding-top: 6px;
             margin-top: 4px;
         }
 
-        @media (max-width: 800px) {
+        .summary-row.total-net {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--success-color);
+            border-top: 1px dashed var(--accent-color);
+            padding-top: 6px;
+            margin-top: 4px;
+        }
+
+        /* MEDIA QUERIES DISPOSITIVI MOBILI PICCOLI */
+        @media (max-width: 600px) {
+            body {
+                padding: 4px;
+            }
+            .container {
+                padding: 8px;
+            }
             .calendar-grid, .calendar-weekdays {
-                grid-template-columns: repeat(7, minmax(40px, 1fr));
-                gap: 3px;
+                grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 2px;
             }
             .calendar-day {
-                padding: 3px 2px;
-                min-height: 110px;
+                padding: 2px 1px;
+                min-height: 105px;
+            }
+            .day-num {
+                font-size: 0.95rem;
+            }
+            .day-num-badge {
+                padding: 1px 4px;
+                margin-bottom: 2px;
             }
             .btn-touch {
                 width: 22px;
                 height: 22px;
-                font-size: 0.8rem;
+                font-size: 0.9rem;
             }
             .touch-val {
-                font-size: 0.78rem;
-                width: 18px;
+                font-size: 0.8rem;
+                width: 14px;
             }
             .touch-label {
-                font-size: 0.58rem;
-            }
-            .day-num {
-                font-size: 0.9rem;
+                font-size: 0.52rem;
+                display: none; /* Nasconde l'etichetta testo sui telefoni molto piccoli per risparmiare spazio */
             }
         }
     </style>
@@ -337,7 +368,7 @@
 <div class="container">
     <div class="header-bar">
         <h1>Calcolatore Ore & Straordinari</h1>
-        <div class="input-group" style="flex-direction: row; align-items: center; gap: 8px;">
+        <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
             <label for="yearSelect">Anno:</label>
             <select id="yearSelect" onchange="buildYearGrid()"></select>
         </div>
@@ -353,7 +384,7 @@
     <!-- TAB MASTER CONFIGURATO CON DATI CEDOLINO -->
     <div class="tab-content active" id="tab-master">
         <div class="master-panel">
-            <h2 style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px;">Dati Master da Cedolino</h2>
+            <h2 style="font-size: 1rem; color: var(--accent-color); margin-bottom: 12px;">Dati Master da Cedolino</h2>
             <div class="grid-config">
                 <div class="input-group">
                     <label for="monthlySalary">Stipendio Base Lordo (€)</label>
@@ -385,7 +416,7 @@
     <!-- TAB TOTALE ANNUALE -->
     <div class="tab-content" id="tab-annual">
         <div class="summary-box">
-            <h2 style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px;">Bilancio Complessivo Anno</h2>
+            <h2 style="font-size: 1.05rem; color: var(--accent-color); margin-bottom: 12px;">Bilancio Complessivo Anno</h2>
             <div class="summary-row">
                 <span>Totale Ore Ordinarie Annue:</span>
                 <span id="yearStdHours">0 h</span>
@@ -501,7 +532,9 @@
 
                 calendarHTML += `
                     <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
-                        <span class="day-num">${d}</span>
+                        <div class="day-num-badge">
+                            <span class="day-num">${d}</span>
+                        </div>
                         
                         <div class="touch-input-group">
                             <span class="touch-label">ORD</span>
@@ -526,7 +559,7 @@
 
             tabDiv.innerHTML = `
                 <div class="actions-bar">
-                    <h2 style="font-size: 1.2rem; color: var(--accent-color);">${mName} ${year}</h2>
+                    <h2 style="font-size: 1.1rem; color: var(--accent-color);">${mName} ${year}</h2>
                     <div>
                         <button class="btn-small" onclick="fillMonthWorkdays(${mIndex})">Compila Lun-Ven (8h)</button>
                         <button class="btn-small" onclick="clearMonth(${mIndex})">Azzera Mese</button>
@@ -654,11 +687,10 @@
                 const rate = entry.isWeekend ? weekendOvertimeRate : weekdayOvertimeRate;
                 monthPaidExtPay += (paidHoursInThisEntry * rate);
 
-                // COLORAZIONE RICHIESTA: GIALLO FINO A 20H, VERDE DALLA 21ª ORA IN POI
                 if (paidHoursInThisEntry > 0) {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--success-color)"); // VERDE
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (€)`, "var(--success-color)");
                 } else {
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)"); // GIALLO
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h (Forfait)`, "var(--warning-color)");
                 }
             });
 
