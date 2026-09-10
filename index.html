@@ -42,23 +42,21 @@
 
     <style>
         :root {
-            --bg-color: #080c14;
-            --card-bg: rgba(15, 23, 42, 0.75);
+            --bg-color: #060911;
+            --card-bg: rgba(15, 23, 42, 0.7);
             --accent-color: #38bdf8;
             --accent-glow: rgba(56, 189, 248, 0.35);
-            --accent-purple: #c084fc;
+            --purple-color: #c084fc;
             --purple-glow: rgba(192, 132, 252, 0.25);
             --text-color: #f8fafc;
             --text-muted: #64748b;
-            --border-color: rgba(51, 65, 85, 0.7);
+            --border-color: rgba(51, 65, 85, 0.6);
             --border-glow: rgba(56, 189, 248, 0.2);
             --danger-color: #fb7185;
             --success-color: #34d399;
             --warning-color: #fbbf24;
-            --weekend-bg: rgba(192, 132, 252, 0.06);
-            --day-bg: rgba(15, 23, 42, 0.6);
-            --tab-active-bg: #1e293b;
-            --tab-inactive-bg: #0b1329;
+            --weekend-bg: rgba(192, 132, 252, 0.08);
+            --day-bg: rgba(15, 23, 42, 0.65);
         }
 
         * {
@@ -88,8 +86,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(8, 12, 20, 0.95);
-            backdrop-filter: blur(12px);
+            background: rgba(6, 9, 17, 0.95);
+            backdrop-filter: blur(14px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -100,13 +98,13 @@
         .login-card {
             background: var(--card-bg);
             border: 1px solid var(--accent-color);
-            box-shadow: 0 0 25px var(--accent-glow);
-            border-radius: 20px;
-            padding: 30px;
+            box-shadow: 0 0 30px var(--accent-glow);
+            border-radius: 24px;
+            padding: 32px;
             max-width: 380px;
             width: 100%;
             text-align: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
         }
 
         .login-card h2 {
@@ -126,20 +124,20 @@
         .login-card input {
             width: 100%;
             padding: 12px;
-            background: rgba(8, 12, 20, 0.8);
+            background: rgba(6, 9, 17, 0.8);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--text-color);
             font-size: 1.1rem;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
         }
 
         .login-card input:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
+            box-shadow: 0 0 12px var(--accent-glow);
         }
 
         .login-card button {
@@ -149,10 +147,9 @@
             color: #000;
             font-weight: 800;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1rem;
             cursor: pointer;
-            letter-spacing: 0.5px;
             box-shadow: 0 4px 15px var(--accent-glow);
             transition: transform 0.1s ease;
         }
@@ -164,11 +161,11 @@
         .container {
             display: none;
             background-color: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 1px rgba(255,255,255,0.1);
-            padding: 14px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 1px rgba(255,255,255,0.1);
+            padding: 16px;
             width: 100%;
-            max-width: 1240px;
+            max-width: 900px;
             border: 1px solid var(--border-glow);
             backdrop-filter: blur(16px);
         }
@@ -177,8 +174,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
             border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
             gap: 12px;
@@ -196,8 +193,8 @@
             align-items: flex-start;
             background: #000000;
             padding: 6px 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
             box-shadow: 0 0 12px rgba(0,0,0,0.8);
             user-select: none;
         }
@@ -246,8 +243,8 @@
             gap: 6px;
             overflow-x: auto;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 4px;
-            margin-bottom: 14px;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
         }
@@ -257,11 +254,11 @@
         }
 
         .tab-btn {
-            background-color: var(--tab-inactive-bg);
+            background-color: rgba(11, 19, 41, 0.8);
             color: var(--text-muted);
             border: 1px solid var(--border-color);
-            padding: 10px 16px;
-            border-radius: 10px;
+            padding: 10px 18px;
+            border-radius: 14px;
             cursor: pointer;
             font-size: 0.88rem;
             font-weight: 700;
@@ -271,10 +268,10 @@
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 197, 0.1));
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 197, 0.15));
             color: var(--accent-color);
             border-color: var(--accent-color);
-            box-shadow: 0 0 12px var(--accent-glow);
+            box-shadow: 0 0 14px var(--accent-glow);
         }
 
         .tab-content {
@@ -286,10 +283,10 @@
         }
 
         .master-panel {
-            background: rgba(8, 12, 20, 0.6);
+            background: rgba(6, 9, 17, 0.6);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 18px;
         }
 
         .grid-config {
@@ -313,14 +310,14 @@
         }
 
         input, select {
-            background-color: rgba(8, 12, 20, 0.9);
+            background-color: rgba(6, 9, 17, 0.9);
             border: 1px solid var(--border-color);
             color: var(--text-color);
             padding: 10px 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
         }
 
         input:focus, select:focus {
@@ -332,7 +329,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             gap: 8px;
             flex-wrap: wrap;
         }
@@ -342,7 +339,7 @@
             color: var(--text-color);
             border: 1px solid var(--border-color);
             padding: 8px 14px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 0.82rem;
             font-weight: 700;
@@ -355,102 +352,114 @@
             box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        .calendar-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 800;
-            font-size: 0.78rem;
-            color: var(--accent-color);
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid var(--border-color);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        /* --- NUOVO LAYOUT CARTE GIORNALIERE HUD/TECH --- */
-        .calendar-day {
-            background: var(--day-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 6px 4px;
-            min-height: 128px;
+        /* --- NUOVO LAYOUT AD AGENDA / FEED SLIM --- */
+        .days-feed-container {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .day-card-row {
+            background: var(--day-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
             align-items: center;
-            position: relative;
+            justify-content: space-between;
+            gap: 12px;
             transition: all 0.2s ease;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
-        .calendar-day:not(.empty):hover {
-            border-color: rgba(56, 189, 248, 0.5);
+        .day-card-row:hover {
+            border-color: rgba(56, 189, 248, 0.4);
             box-shadow: 0 0 12px var(--accent-glow);
-            transform: translateY(-2px);
         }
 
-        .calendar-day.empty {
-            background: transparent;
-            border: none;
-            backdrop-filter: none;
-        }
-
-        .calendar-day.weekend {
+        .day-card-row.weekend {
             background: var(--weekend-bg);
-            border-color: rgba(192, 132, 252, 0.3);
+            border-color: rgba(192, 132, 252, 0.25);
         }
 
-        .calendar-day.weekend:hover {
-            border-color: var(--accent-purple);
+        .day-card-row.weekend:hover {
+            border-color: var(--purple-color);
             box-shadow: 0 0 12px var(--purple-glow);
         }
 
-        .day-num-badge {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2px 7px;
-            border-radius: 6px;
-            margin-bottom: 4px;
-        }
-
-        .day-num {
-            font-size: 1rem;
-            font-weight: 900;
-            color: #ffffff;
-            line-height: 1;
-        }
-
-        .calendar-day.weekend .day-num {
-            color: var(--accent-purple);
-            text-shadow: 0 0 6px var(--purple-glow);
-        }
-
-        .touch-input-group {
+        .day-info-left {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            margin: 2px 0;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            padding: 2px 4px;
-            border: 1px solid rgba(255,255,255,0.05);
+            gap: 12px;
+            min-width: 120px;
         }
 
-        .touch-label {
-            font-size: 0.62rem;
+        .day-num-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .day-card-row.weekend .day-num-circle {
+            color: var(--purple-color);
+            border-color: rgba(192, 132, 252, 0.4);
+            box-shadow: 0 0 8px var(--purple-glow);
+        }
+
+        .day-date-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-name-label {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-color);
+            text-transform: capitalize;
+        }
+
+        .day-card-row.weekend .day-name-label {
+            color: var(--purple-color);
+        }
+
+        .day-tag {
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin-top: 1px;
+        }
+
+        .day-controls-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-pill-group {
+            display: flex;
+            align-items: center;
+            background: rgba(6, 9, 17, 0.6);
+            border-radius: 12px;
+            padding: 3px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 6px;
+        }
+
+        .ctrl-pill-label {
+            font-size: 0.65rem;
             color: var(--text-muted);
             font-weight: 900;
+            padding: 0 4px;
             letter-spacing: 0.5px;
         }
 
@@ -458,10 +467,10 @@
             background: rgba(30, 41, 59, 0.9);
             color: #ffffff;
             border: 1px solid rgba(71, 85, 105, 0.6);
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            font-size: 1.1rem;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            font-size: 1.2rem;
             font-weight: 900;
             display: flex;
             align-items: center;
@@ -481,27 +490,19 @@
         }
 
         .touch-val {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 900;
-            width: 22px;
+            width: 26px;
             text-align: center;
             color: #ffffff;
         }
 
-        .day-tag {
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-align: center;
-            margin-top: 3px;
-            letter-spacing: 0.3px;
-        }
-
         .summary-box {
-            background: rgba(8, 12, 20, 0.8);
+            background: rgba(6, 9, 17, 0.85);
             border: 1px solid var(--accent-color);
-            box-shadow: 0 0 15px var(--accent-glow);
-            border-radius: 14px;
-            padding: 16px;
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-radius: 18px;
+            padding: 18px;
         }
 
         .summary-row {
@@ -524,19 +525,19 @@
             font-size: 1.25rem;
             font-weight: 900;
             color: var(--success-color);
-            text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.35);
             border-top: 1px dashed var(--accent-color);
             padding-top: 8px;
             margin-top: 6px;
         }
 
-        @media (max-width: 650px) {
+        @media (max-width: 580px) {
             body {
                 padding: 4px;
             }
             .container {
-                padding: 8px;
-                border-radius: 14px;
+                padding: 10px;
+                border-radius: 16px;
             }
             .header-left {
                 gap: 8px;
@@ -551,31 +552,47 @@
                 font-size: 0.48rem;
             }
             .title-box h1 {
-                font-size: 0.95rem;
+                font-size: 0.92rem;
             }
             .title-box .subtitle-name {
                 font-size: 0.85rem;
             }
-            .calendar-grid, .calendar-weekdays {
-                grid-template-columns: repeat(7, minmax(0, 1fr));
-                gap: 3px;
+            .day-card-row {
+                padding: 8px 10px;
+                gap: 6px;
             }
-            .calendar-day {
-                padding: 3px 1px;
-                min-height: 118px;
+            .day-info-left {
+                min-width: 90px;
+                gap: 8px;
+            }
+            .day-num-circle {
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
                 border-radius: 8px;
             }
+            .day-name-label {
+                font-size: 0.8rem;
+            }
+            .day-controls-right {
+                gap: 6px;
+            }
+            .ctrl-pill-group {
+                padding: 2px 4px;
+                gap: 2px;
+            }
             .btn-touch {
-                width: 26px;
+                width: 30px;
                 height: 30px;
                 font-size: 1rem;
+                border-radius: 8px;
             }
             .touch-val {
-                font-size: 0.85rem;
-                width: 14px;
+                font-size: 0.88rem;
+                width: 18px;
             }
-            .touch-label {
-                display: none;
+            .ctrl-pill-label {
+                font-size: 0.58rem;
             }
         }
     </style>
@@ -687,7 +704,7 @@
 <script>
     const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
     const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
-    const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+    const weekDaysFull = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 
     let currentCloudPassword = "1234";
 
@@ -785,52 +802,49 @@
 
         monthNames.forEach((mName, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
-            let firstDayOfWeek = new Date(year, mIndex, 1).getDay();
-            firstDayOfWeek = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
 
             const tabDiv = document.createElement('div');
             tabDiv.className = 'tab-content';
             tabDiv.id = `tab-month-${mIndex}`;
 
-            let calendarHTML = `<div class="calendar-weekdays">`;
-            weekDaysShort.forEach(d => calendarHTML += `<div>${d}</div>`);
-            calendarHTML += `</div><div class="calendar-grid">`;
-
-            for (let e = 0; e < firstDayOfWeek; e++) {
-                calendarHTML += `<div class="calendar-day empty"></div>`;
-            }
+            let feedHTML = `<div class="days-feed-container">`;
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const dayNameStr = weekDaysFull[dayOfWeek];
 
-                calendarHTML += `
-                    <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
-                        <div class="day-num-badge">
-                            <span class="day-num">${d}</span>
-                        </div>
-                        
-                        <div class="touch-input-group">
-                            <span class="touch-label">ORD</span>
-                            <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
-                            <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
+                feedHTML += `
+                    <div class="day-card-row ${isWeekend ? 'weekend' : ''}">
+                        <div class="day-info-left">
+                            <div class="day-num-circle">${d}</div>
+                            <div class="day-date-text">
+                                <span class="day-name-label">${dayNameStr}</span>
+                                <span class="day-tag" id="tag-m${mIndex}-d${d}">-</span>
+                            </div>
                         </div>
 
-                        <div class="touch-input-group">
-                            <span class="touch-label">EXT</span>
-                            <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
-                            <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
-                        </div>
+                        <div class="day-controls-right">
+                            <div class="ctrl-pill-group">
+                                <span class="ctrl-pill-label">ORD</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
+                                <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
+                            </div>
 
-                        <span class="day-tag" id="tag-m${mIndex}-d${d}">-</span>
+                            <div class="ctrl-pill-group">
+                                <span class="ctrl-pill-label">EXTRA</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
+                                <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
+                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
 
-            calendarHTML += `</div>`;
+            feedHTML += `</div>`;
 
             tabDiv.innerHTML = `
                 <div class="actions-bar">
@@ -841,7 +855,7 @@
                     </div>
                 </div>
 
-                ${calendarHTML}
+                ${feedHTML}
 
                 <div class="summary-box">
                     <div class="summary-row">
