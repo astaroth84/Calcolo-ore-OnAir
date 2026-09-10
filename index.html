@@ -83,7 +83,7 @@
             color: var(--text-muted);
             border: 1px solid var(--border-color);
             border-bottom: none;
-            padding: 12px 18px; /* Tasto touch più grande per smartphone */
+            padding: 12px 18px;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             cursor: pointer;
@@ -285,13 +285,22 @@
             font-size: 0.95rem;
         }
 
-        .summary-row.total {
-            font-size: 1.25rem;
+        .summary-row.total-gross {
+            font-size: 1.1rem;
             font-weight: bold;
-            color: var(--accent-color);
+            color: var(--text-color);
             border-top: 1px solid var(--border-color);
-            padding-top: 10px;
+            padding-top: 8px;
             margin-top: 5px;
+        }
+
+        .summary-row.total-net {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--success-color);
+            border-top: 1px dashed var(--accent-color);
+            padding-top: 8px;
+            margin-top: 4px;
         }
 
         @media (max-width: 800px) {
@@ -339,27 +348,27 @@
     <!-- TAB MASTER CONFIGURATO CON DATI CEDOLINO -->
     <div class="tab-content active" id="tab-master">
         <div class="master-panel">
-            <h2 style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px;">Dati Master da Cedolino (On Air Multimedia)</h2>
+            <h2 style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px;">Dati Master da Cedolino</h2>
             <div class="grid-config">
                 <div class="input-group">
-                    <label for="monthlySalary">Stipendio Base Mensile (€)</label>
+                    <label for="monthlySalary">Stipendio Base Lordo (€)</label>
                     <input type="number" id="monthlySalary" value="2573.00" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="standardHours">Ore Std / Giorno</label>
-                    <input type="number" id="standardHours" value="8" step="1" oninput="calculateAll()">
-                </div>
-                <div class="input-group">
-                    <label for="weekdayOvertimeRate">Extra Feriale (€/h)</label>
+                    <label for="weekdayOvertimeRate">Extra Feriale (€/h Lordo)</label>
                     <input type="number" id="weekdayOvertimeRate" value="17.61" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="weekendOvertimeRate">Extra Festivo / Sab / Dom (€/h)</label>
+                    <label for="weekendOvertimeRate">Extra Festivo/Sab/Dom (€/h Lordo)</label>
                     <input type="number" id="weekendOvertimeRate" value="19.91" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
                     <label for="forfaitThreshold">Soglia Forfait Mensile (Ore)</label>
                     <input type="number" id="forfaitThreshold" value="20" step="1" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
+                    <label for="taxDeductionRate">Trattenute Stimate / Tasse (%)</label>
+                    <input type="number" id="taxDeductionRate" value="30.0" step="0.5" oninput="calculateAll()">
                 </div>
             </div>
         </div>
@@ -385,16 +394,20 @@
                 <span id="yearPaidExtHours" style="color: var(--danger-color);">0 h</span>
             </div>
             <div class="summary-row">
-                <span>Stipendio Base Annuo:</span>
+                <span>Stipendio Base Lordo Annuo:</span>
                 <span id="yearBasePay">0.00 €</span>
             </div>
             <div class="summary-row">
-                <span>Compenso Straordinari Pagati Annuo:</span>
-                <span id="yearExtPay" style="color: var(--success-color);">+0.00 €</span>
+                <span>Compenso Extra Lordo Pagato:</span>
+                <span id="yearExtPay" style="color: var(--warning-color);">+0.00 €</span>
             </div>
-            <div class="summary-row total">
-                <span>Totale Guadagno Annuo:</span>
-                <span id="yearGrandTotal">0.00 €</span>
+            <div class="summary-row total-gross">
+                <span>Totale Lordo Annuo:</span>
+                <span id="yearGrossTotal">0.00 €</span>
+            </div>
+            <div class="summary-row total-net">
+                <span>Stima Netto in Busta Annuo:</span>
+                <span id="yearNetTotal">0.00 €</span>
             </div>
         </div>
     </div>
@@ -485,7 +498,6 @@
                     <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
                         <span class="day-num">${d}</span>
                         
-                        <!-- CONTROLLI TOUCH ORD -->
                         <div class="touch-input-group">
                             <span class="touch-label">ORD</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
@@ -493,7 +505,6 @@
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
                         </div>
 
-                        <!-- CONTROLLI TOUCH EXTRA -->
                         <div class="touch-input-group">
                             <span class="touch-label">EXT</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
@@ -533,16 +544,20 @@
                         <span id="summary-paid-ext-${mIndex}" style="color: var(--danger-color);">0 h</span>
                     </div>
                     <div class="summary-row">
-                        <span>Stipendio Base Fisso:</span>
+                        <span>Stipendio Base Lordo:</span>
                         <span id="summary-base-pay-${mIndex}">0.00 €</span>
                     </div>
                     <div class="summary-row">
-                        <span>Compenso Extra Pagato:</span>
-                        <span id="summary-ext-pay-${mIndex}" style="color: var(--success-color);">+0.00 €</span>
+                        <span>Compenso Extra Lordo:</span>
+                        <span id="summary-ext-pay-${mIndex}" style="color: var(--warning-color);">+0.00 €</span>
                     </div>
-                    <div class="summary-row total">
-                        <span>Totale Guadagno Mese:</span>
-                        <span id="summary-total-${mIndex}">0.00 €</span>
+                    <div class="summary-row total-gross">
+                        <span>Totale Lordo Mese:</span>
+                        <span id="summary-gross-${mIndex}">0.00 €</span>
+                    </div>
+                    <div class="summary-row total-net">
+                        <span>Stima Netto in Busta:</span>
+                        <span id="summary-net-${mIndex}">0.00 €</span>
                     </div>
                 </div>
             `;
@@ -572,6 +587,7 @@
         const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
         const weekendOvertimeRate = parseFloat(document.getElementById('weekendOvertimeRate').value) || 0;
         const forfaitThreshold = parseFloat(document.getElementById('forfaitThreshold').value) || 0;
+        const taxRate = (parseFloat(document.getElementById('taxDeductionRate').value) || 0) / 100;
 
         let yearStdHrs = 0;
         let yearExtHrs = 0;
@@ -641,14 +657,16 @@
             });
 
             const monthBasePay = (monthStdHrs > 0 || monthExtHrs > 0) ? monthlySalary : 0;
-            const monthTotalPay = monthBasePay + monthPaidExtPay;
+            const monthGrossTotal = monthBasePay + monthPaidExtPay;
+            const monthNetTotal = monthGrossTotal * (1 - taxRate);
 
             document.getElementById(`summary-std-${mIndex}`).innerText = `${monthStdHrs} h`;
             document.getElementById(`summary-ext-${mIndex}`).innerText = `${monthExtHrs} h`;
             document.getElementById(`summary-paid-ext-${mIndex}`).innerText = `${monthPaidExtHrs} h`;
             document.getElementById(`summary-base-pay-${mIndex}`).innerText = `${monthBasePay.toFixed(2)} €`;
             document.getElementById(`summary-ext-pay-${mIndex}`).innerText = `+${monthPaidExtPay.toFixed(2)} €`;
-            document.getElementById(`summary-total-${mIndex}`).innerText = `${monthTotalPay.toFixed(2)} €`;
+            document.getElementById(`summary-gross-${mIndex}`).innerText = `${monthGrossTotal.toFixed(2)} €`;
+            document.getElementById(`summary-net-${mIndex}`).innerText = `${monthNetTotal.toFixed(2)} €`;
 
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
@@ -659,14 +677,16 @@
             saveData(year, mIndex, monthState);
         });
 
-        const yearGrandTotal = yearBasePay + yearExtPay;
+        const yearGrossTotal = yearBasePay + yearExtPay;
+        const yearNetTotal = yearGrossTotal * (1 - taxRate);
 
         document.getElementById('yearStdHours').innerText = `${yearStdHrs} h`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs} h`;
         document.getElementById('yearPaidExtHours').innerText = `${yearPaidExtHrs} h`;
         document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
         document.getElementById('yearExtPay').innerText = `+${yearExtPay.toFixed(2)} €`;
-        document.getElementById('yearGrandTotal').innerText = `${yearGrandTotal.toFixed(2)} €`;
+        document.getElementById('yearGrossTotal').innerText = `${yearGrossTotal.toFixed(2)} €`;
+        document.getElementById('yearNetTotal').innerText = `${yearNetTotal.toFixed(2)} €`;
     }
 
     function updateDayTag(mIndex, day, text, color) {
