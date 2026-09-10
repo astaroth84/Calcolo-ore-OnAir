@@ -4,6 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calcolatore Ore & Straordinari - Santoro Carlo</title>
+    <!-- SDK Firebase CDN (Modulo V9) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+      // --- CONFIGURAZIONE CON I TUOI DATI UFFICIALI ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyDG_hTDelv6-c0FGMcrMqFUC6IxcczLqLU",
+        authDomain: "foglio-ore-on-air-carlo.firebaseapp.com",
+        databaseURL: "https://foglio-ore-on-air-carlo-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "foglio-ore-on-air-carlo",
+        storageBucket: "foglio-ore-on-air-carlo.firebasestorage.app",
+        messagingSenderId: "508837858474",
+        appId: "1:508837858474:web:66a5222fb3d07fc53014d3"
+      };
+
+      // Inizializza Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // Esposizione globale per lo script locale
+      window.db = db;
+      window.dbRef = ref;
+      window.dbSet = set;
+      window.dbOnValue = onValue;
+      window.firebaseReady = true;
+      
+      if(window.initAppAfterFirebase) {
+          window.initAppAfterFirebase();
+      }
+    </script>
+
     <style>
         :root {
             --bg-color: #0f172a;
@@ -40,7 +72,6 @@
             padding: 8px;
         }
 
-        /* SCHERMATA LOGIN PASSWORD */
         #loginOverlay {
             position: fixed;
             top: 0;
@@ -104,7 +135,7 @@
         }
 
         .container {
-            display: none; /* nascosto finché non viene inserita la password */
+            display: none;
             background-color: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -482,7 +513,6 @@
 </head>
 <body>
 
-<!-- SCHERMATA LOGIN PASSWORD -->
 <div id="loginOverlay">
     <div class="login-card">
         <h2>Area Riservata</h2>
@@ -540,6 +570,10 @@
                     <label for="taxDeductionRate">Trattenute Stimate / Tasse (%)</label>
                     <input type="number" id="taxDeductionRate" value="30.0" step="0.5" oninput="calculateAll()">
                 </div>
+                <div class="input-group">
+                    <label for="appPassword">Password Accesso App</label>
+                    <input type="password" id="appPassword" value="1234" oninput="saveCustomPassword()">
+                </div>
             </div>
         </div>
     </div>
@@ -582,11 +616,20 @@
 </div>
 
 <script>
-    const SECRET_PASS = "159753"; // CAMBIA QUI LA TUA PASSWORD DI ACCESSO
+    function getStoredPassword() {
+        return localStorage.getItem('custom_app_pass') || "1234";
+    }
+
+    function saveCustomPassword() {
+        const val = document.getElementById('appPassword').value;
+        if (val) {
+            localStorage.setItem('custom_app_pass', val);
+        }
+    }
 
     function checkPass() {
         const entered = document.getElementById('passInput').value;
-        if (entered === SECRET_PASS) {
+        if (entered === getStoredPassword()) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             sessionStorage.setItem('auth_calc', 'true');
@@ -657,8 +700,6 @@
             let firstDayOfWeek = new Date(year, mIndex, 1).getDay();
             firstDayOfWeek = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
 
-            const savedData = loadSavedData(year, mIndex);
-
             const tabDiv = document.createElement('div');
             tabDiv.className = 'tab-content';
             tabDiv.id = `tab-month-${mIndex}`;
@@ -675,10 +716,6 @@
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-                
-                const daySaved = savedData[d] || {};
-                const ordVal = parseInt(daySaved.ord) || 0;
-                const extVal = parseInt(daySaved.ext) || 0;
 
                 calendarHTML += `
                     <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
@@ -689,14 +726,14 @@
                         <div class="touch-input-group">
                             <span class="touch-label">ORD</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">${ordVal}</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
                         </div>
 
                         <div class="touch-input-group">
                             <span class="touch-label">EXT</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">${extVal}</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
                         </div>
 
@@ -753,7 +790,8 @@
             container.appendChild(tabDiv);
         });
 
-        calculateAll();
+        document.getElementById('appPassword').value = getStoredPassword();
+        attachFirebaseListener();
     }
 
     function changeHours(mIndex, d, type, delta) {
@@ -766,7 +804,7 @@
         if (cur > 24) cur = 24;
 
         el.innerText = cur;
-        calculateAll();
+        saveSingleDayCloud(mIndex, d);
     }
 
     function calculateAll() {
@@ -787,7 +825,6 @@
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
             let monthStdHrs = 0;
             let monthExtHrs = 0;
-            const monthState = {};
 
             const overtimeEntries = [];
 
@@ -798,8 +835,6 @@
 
                 const ordHours = parseInt(elOrd.innerText) || 0;
                 const extHours = parseInt(elExt.innerText) || 0;
-
-                monthState[d] = { ord: ordHours, ext: extHours };
 
                 monthStdHrs += ordHours;
 
@@ -861,8 +896,6 @@
             yearPaidExtHrs += monthPaidExtHrs;
             yearBasePay += monthBasePay;
             yearExtPay += monthPaidExtPay;
-
-            saveData(year, mIndex, monthState);
         });
 
         const yearGrossTotal = yearBasePay + yearExtPay;
@@ -885,48 +918,78 @@
         }
     }
 
+    function saveSingleDayCloud(mIndex, day) {
+        if (!window.firebaseReady) return;
+        const year = yearSelect.value;
+        const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
+        const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ext`).innerText) || 0;
+
+        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
+        window.dbSet(pathRef, { ord: ordVal, ext: extVal });
+    }
+
     function fillMonthWorkdays(mIndex) {
         const year = parseInt(yearSelect.value);
         const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+        const monthState = {};
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(year, mIndex, d);
             const dayOfWeek = dateObj.getDay();
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
-                if (elOrd) elOrd.innerText = 8;
+                monthState[d] = { ord: 8, ext: 0 };
             }
         }
-        calculateAll();
+        if (window.firebaseReady) {
+            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+            window.dbSet(pathRef, monthState);
+        }
     }
 
     function clearMonth(mIndex) {
         const year = parseInt(yearSelect.value);
-        const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
-
-        for (let d = 1; d <= daysInMonth; d++) {
-            const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
-            const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
-            if (elOrd) elOrd.innerText = 0;
-            if (elExt) elExt.innerText = 0;
+        if (window.firebaseReady) {
+            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+            window.dbSet(pathRef, null);
         }
-        calculateAll();
     }
 
-    function saveData(year, month, data) {
-        const key = `work_hours_${year}_${month}`;
-        localStorage.setItem(key, JSON.stringify(data));
+    function attachFirebaseListener() {
+        if (!window.firebaseReady) return;
+        const year = yearSelect.value;
+        const yearRef = window.dbRef(window.db, `work_data/${year}`);
+
+        window.dbOnValue(yearRef, (snapshot) => {
+            const data = snapshot.val() || {};
+            
+            monthNames.forEach((_, mIndex) => {
+                const daysInMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
+                const monthData = data[mIndex] || {};
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+                    const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+                    if (!elOrd || !elExt) continue;
+
+                    const dayObj = monthData[d] || { ord: 0, ext: 0 };
+                    elOrd.innerText = dayObj.ord || 0;
+                    elExt.innerText = dayObj.ext || 0;
+                }
+            });
+
+            calculateAll();
+        });
     }
 
-    function loadSavedData(year, month) {
-        const key = `work_hours_${year}_${month}`;
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : {};
-    }
+    window.initAppAfterFirebase = function() {
+        initYearSelector();
+        initTabs();
+        buildYearGrid();
+    };
 
-    initYearSelector();
-    initTabs();
-    buildYearGrid();
+    if (window.firebaseReady) {
+        window.initAppAfterFirebase();
+    }
 </script>
 
 </body>
