@@ -9,30 +9,33 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
       import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-      // --- CONFIGURAZIONE CON I TUOI DATI UFFICIALI ---
+      // --- CONFIGURAZIONE FIREBASE ---
       const firebaseConfig = {
         apiKey: "AIzaSyDG_hTDelv6-c0FGMcrMqFUC6IxcczLqLU",
         authDomain: "foglio-ore-on-air-carlo.firebaseapp.com",
-        databaseURL: "https://console.firebase.google.com/project/foglio-ore-on-air-carlo/database/foglio-ore-on-air-carlo-default-rtdb/data/~2F",
+        databaseURL: "https://foglio-ore-on-air-carlo-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "foglio-ore-on-air-carlo",
         storageBucket: "foglio-ore-on-air-carlo.firebasestorage.app",
         messagingSenderId: "508837858474",
         appId: "1:508837858474:web:66a5222fb3d07fc53014d3"
       };
 
-      // Inizializza Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
+      try {
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-      // Esposizione globale per lo script locale
-      window.db = db;
-      window.dbRef = ref;
-      window.dbSet = set;
-      window.dbOnValue = onValue;
-      window.firebaseReady = true;
-      
-      if(window.initAppAfterFirebase) {
-          window.initAppAfterFirebase();
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbOnValue = onValue;
+        window.firebaseReady = true;
+      } catch (e) {
+        console.warn("Firebase non ancora pronto o non configurato:", e);
+        window.firebaseReady = false;
+      }
+
+      if (window.initApp) {
+          window.initApp();
       }
     </script>
 
@@ -616,6 +619,10 @@
 </div>
 
 <script>
+    const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+    const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+
     function getStoredPassword() {
         return localStorage.getItem('custom_app_pass') || "1234";
     }
@@ -643,13 +650,9 @@
         document.getElementById('mainContainer').style.display = 'block';
     }
 
-    const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-    const monthShortNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
-    const weekDaysShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-
-    const yearSelect = document.getElementById('yearSelect');
-
     function initYearSelector() {
+        const yearSelect = document.getElementById('yearSelect');
+        if (yearSelect.children.length > 0) return;
         const currentYear = new Date().getFullYear();
         for (let y = currentYear - 2; y <= currentYear + 2; y++) {
             const opt = document.createElement('option');
@@ -662,6 +665,7 @@
 
     function initTabs() {
         const tabsBar = document.getElementById('tabsBar');
+        if (document.getElementById('btn-tab-0')) return;
         const annualBtn = tabsBar.lastElementChild;
 
         monthShortNames.forEach((mShort, mIndex) => {
@@ -685,12 +689,15 @@
             document.querySelector('.tab-btn:last-child').classList.add('active');
             document.getElementById('tab-annual').classList.add('active');
         } else {
-            document.getElementById(`btn-tab-${tabId}`).classList.add('active');
-            document.getElementById(`tab-month-${tabId}`).classList.add('active');
+            const btn = document.getElementById(`btn-tab-${tabId}`);
+            const content = document.getElementById(`tab-month-${tabId}`);
+            if (btn) btn.classList.add('active');
+            if (content) content.classList.add('active');
         }
     }
 
     function buildYearGrid() {
+        const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
         const container = document.getElementById('monthsTabContainer');
         container.innerHTML = '';
@@ -699,6 +706,8 @@
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
             let firstDayOfWeek = new Date(year, mIndex, 1).getDay();
             firstDayOfWeek = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
+
+            const savedLocal = loadSavedData(year, mIndex);
 
             const tabDiv = document.createElement('div');
             tabDiv.className = 'tab-content';
@@ -716,6 +725,8 @@
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                
+                const dayObj = savedLocal[d] || { ord: 0, ext: 0 };
 
                 calendarHTML += `
                     <div class="calendar-day ${isWeekend ? 'weekend' : ''}">
@@ -726,14 +737,14 @@
                         <div class="touch-input-group">
                             <span class="touch-label">ORD</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ord">${dayObj.ord}</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
                         </div>
 
                         <div class="touch-input-group">
                             <span class="touch-label">EXT</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
-                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
+                            <span class="touch-val" id="val-m${mIndex}-d${d}-ext">${dayObj.ext}</span>
                             <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
                         </div>
 
@@ -791,6 +802,7 @@
         });
 
         document.getElementById('appPassword').value = getStoredPassword();
+        calculateAll();
         attachFirebaseListener();
     }
 
@@ -804,10 +816,12 @@
         if (cur > 24) cur = 24;
 
         el.innerText = cur;
-        saveSingleDayCloud(mIndex, d);
+        calculateAll();
+        saveSingleDayData(mIndex, d);
     }
 
     function calculateAll() {
+        const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
         const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
         const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
@@ -883,13 +897,26 @@
             const monthGrossTotal = monthBasePay + monthPaidExtPay;
             const monthNetTotal = monthGrossTotal * (1 - taxRate);
 
-            document.getElementById(`summary-std-${mIndex}`).innerText = `${monthStdHrs} h`;
-            document.getElementById(`summary-ext-${mIndex}`).innerText = `${monthExtHrs} h`;
-            document.getElementById(`summary-paid-ext-${mIndex}`).innerText = `${monthPaidExtHrs} h`;
-            document.getElementById(`summary-base-pay-${mIndex}`).innerText = `${monthBasePay.toFixed(2)} €`;
-            document.getElementById(`summary-ext-pay-${mIndex}`).innerText = `+${monthPaidExtPay.toFixed(2)} €`;
-            document.getElementById(`summary-gross-${mIndex}`).innerText = `${monthGrossTotal.toFixed(2)} €`;
-            document.getElementById(`summary-net-${mIndex}`).innerText = `${monthNetTotal.toFixed(2)} €`;
+            const elStd = document.getElementById(`summary-std-${mIndex}`);
+            if (elStd) elStd.innerText = `${monthStdHrs} h`;
+
+            const elExt = document.getElementById(`summary-ext-${mIndex}`);
+            if (elExt) elExt.innerText = `${monthExtHrs} h`;
+
+            const elPaidExt = document.getElementById(`summary-paid-ext-${mIndex}`);
+            if (elPaidExt) elPaidExt.innerText = `${monthPaidExtHrs} h`;
+
+            const elBasePay = document.getElementById(`summary-base-pay-${mIndex}`);
+            if (elBasePay) elBasePay.innerText = `${monthBasePay.toFixed(2)} €`;
+
+            const elExtPay = document.getElementById(`summary-ext-pay-${mIndex}`);
+            if (elExtPay) elExtPay.innerText = `+${monthPaidExtPay.toFixed(2)} €`;
+
+            const elGross = document.getElementById(`summary-gross-${mIndex}`);
+            if (elGross) elGross.innerText = `${monthGrossTotal.toFixed(2)} €`;
+
+            const elNet = document.getElementById(`summary-net-${mIndex}`);
+            if (elNet) elNet.innerText = `${monthNetTotal.toFixed(2)} €`;
 
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
@@ -918,17 +945,30 @@
         }
     }
 
-    function saveSingleDayCloud(mIndex, day) {
-        if (!window.firebaseReady) return;
+    function saveSingleDayData(mIndex, day) {
+        const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
         const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
         const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ext`).innerText) || 0;
 
-        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
-        window.dbSet(pathRef, { ord: ordVal, ext: extVal });
+        // Salva in Locale
+        const savedLocal = loadSavedData(year, mIndex);
+        savedLocal[day] = { ord: ordVal, ext: extVal };
+        saveLocalData(year, mIndex, savedLocal);
+
+        // Salva in Cloud Firebase
+        if (window.firebaseReady) {
+            try {
+                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
+                window.dbSet(pathRef, { ord: ordVal, ext: extVal });
+            } catch(e) {
+                console.warn("Errore salvataggio cloud:", e);
+            }
+        }
     }
 
     function fillMonthWorkdays(mIndex) {
+        const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
         const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
         const monthState = {};
@@ -937,59 +977,97 @@
             const dateObj = new Date(year, mIndex, d);
             const dayOfWeek = dateObj.getDay();
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+                if (elOrd) elOrd.innerText = 8;
                 monthState[d] = { ord: 8, ext: 0 };
             }
         }
+        calculateAll();
+        saveLocalData(year, mIndex, monthState);
+
         if (window.firebaseReady) {
-            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, monthState);
+            try {
+                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+                window.dbSet(pathRef, monthState);
+            } catch(e) {}
         }
     }
 
     function clearMonth(mIndex) {
+        const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
-        if (window.firebaseReady) {
-            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, null);
+        const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+            const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+            if (elOrd) elOrd.innerText = 0;
+            if (elExt) elExt.innerText = 0;
         }
+        calculateAll();
+        saveLocalData(year, mIndex, {});
+
+        if (window.firebaseReady) {
+            try {
+                const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
+                window.dbSet(pathRef, null);
+            } catch(e) {}
+        }
+    }
+
+    function saveLocalData(year, month, data) {
+        localStorage.setItem(`work_hours_${year}_${month}`, JSON.stringify(data));
+    }
+
+    function loadSavedData(year, month) {
+        const data = localStorage.getItem(`work_hours_${year}_${month}`);
+        return data ? JSON.parse(data) : {};
     }
 
     function attachFirebaseListener() {
         if (!window.firebaseReady) return;
+        const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
-        const yearRef = window.dbRef(window.db, `work_data/${year}`);
 
-        window.dbOnValue(yearRef, (snapshot) => {
-            const data = snapshot.val() || {};
-            
-            monthNames.forEach((_, mIndex) => {
-                const daysInMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
-                const monthData = data[mIndex] || {};
+        try {
+            const yearRef = window.dbRef(window.db, `work_data/${year}`);
+            window.dbOnValue(yearRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
 
-                for (let d = 1; d <= daysInMonth; d++) {
-                    const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
-                    const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
-                    if (!elOrd || !elExt) continue;
+                monthNames.forEach((_, mIndex) => {
+                    const daysInMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
+                    const monthData = data[mIndex] || {};
 
-                    const dayObj = monthData[d] || { ord: 0, ext: 0 };
-                    elOrd.innerText = dayObj.ord || 0;
-                    elExt.innerText = dayObj.ext || 0;
-                }
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+                        const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+                        if (!elOrd || !elExt) continue;
+
+                        if (monthData[d]) {
+                            elOrd.innerText = monthData[d].ord || 0;
+                            elExt.innerText = monthData[d].ext || 0;
+                        }
+                    }
+                });
+
+                calculateAll();
             });
-
-            calculateAll();
-        });
+        } catch(e) {
+            console.warn("Sincronizzazione cloud in attesa:", e);
+        }
     }
 
-    window.initAppAfterFirebase = function() {
+    window.initApp = function() {
         initYearSelector();
         initTabs();
         buildYearGrid();
     };
 
-    if (window.firebaseReady) {
-        window.initAppAfterFirebase();
-    }
+    // Inizializza subito l'app all'apertura della pagina
+    window.onload = function() {
+        window.initApp();
+    };
 </script>
 
 </body>
