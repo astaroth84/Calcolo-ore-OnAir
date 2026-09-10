@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcolatore Ore e Straordinari</title>
+    <title>Calendario Annuale Ore & Straordinari</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -15,6 +15,7 @@
             --border-color: #334155;
             --danger-color: #f43f5e;
             --success-color: #10b981;
+            --weekend-bg: rgba(255, 255, 255, 0.03);
         }
 
         * {
@@ -29,7 +30,7 @@
             color: var(--text-color);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             padding: 20px;
         }
@@ -38,9 +39,9 @@
             background-color: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            padding: 30px;
+            padding: 25px;
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             border: 1px solid var(--border-color);
         }
 
@@ -55,9 +56,9 @@
 
         .grid-config {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
             background: rgba(0, 0, 0, 0.2);
             padding: 15px;
             border-radius: 10px;
@@ -71,46 +72,135 @@
         }
 
         label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 600;
         }
 
-        input {
+        input, select {
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        input:focus {
+        input:focus, select:focus {
             border-color: var(--accent-color);
         }
 
-        .days-container {
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-small:hover {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        /* Contenitore Mesi */
+        .year-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             margin-bottom: 25px;
+        }
+
+        .month-card {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .month-card.active {
+            border-color: var(--accent-color);
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .month-header:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .month-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .month-badge {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .month-body {
+            display: none;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .month-card.open .month-body {
+            display: block;
+        }
+
+        .month-days-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .day-row {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            gap: 10px;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .day-row:last-child {
-            border-bottom: none;
+        .day-row.weekend {
+            background: var(--weekend-bg);
+            border-left: 3px solid var(--accent-color);
         }
 
-        .day-label {
+        .day-date {
+            font-size: 0.85rem;
             font-weight: 600;
-            width: 100px;
         }
 
         .summary-box {
@@ -118,13 +208,12 @@
             border: 1px solid var(--accent-color);
             border-radius: 12px;
             padding: 20px;
-            margin-top: 20px;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-size: 0.95rem;
         }
 
@@ -134,139 +223,269 @@
             color: var(--accent-color);
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
+            margin-top: 5px;
             margin-bottom: 0;
-        }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            font-size: 1rem;
-            transition: background-color 0.2s;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-hover);
-            color: #fff;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Calcolo Ore & Straordinari</h1>
+    <h1>Calendario Annuale Ore & Straordinari</h1>
 
-    <!-- Impostazioni Base -->
+    <!-- Impostazioni Anno e Tariffe -->
     <div class="grid-config">
         <div class="input-group">
-            <label for="hourlyRate">Paga Oraria Base (€)</label>
-            <input type="number" id="hourlyRate" value="12" step="0.5" oninput="calculate()">
+            <label for="yearSelect">Anno Selezionato</label>
+            <select id="yearSelect" onchange="buildYearGrid()"></select>
         </div>
         <div class="input-group">
-            <label for="standardHours">Ore Standard / Giorno</label>
-            <input type="number" id="standardHours" value="8" step="0.5" oninput="calculate()">
+            <label for="hourlyRate">Paga Oraria (€)</label>
+            <input type="number" id="hourlyRate" value="12" step="0.5" oninput="calculateAll()">
         </div>
         <div class="input-group">
-            <label for="overtimeBonus">Maggiorazione Extra (%)</label>
-            <input type="number" id="overtimeBonus" value="30" step="1" oninput="calculate()">
+            <label for="standardHours">Ore Std / Giorno</label>
+            <input type="number" id="standardHours" value="8" step="0.5" oninput="calculateAll()">
+        </div>
+        <div class="input-group">
+            <label for="overtimeBonus">Extra (%)</label>
+            <input type="number" id="overtimeBonus" value="30" step="1" oninput="calculateAll()">
         </div>
     </div>
 
-    <!-- Inserimento Ore Settimanali -->
-    <div class="days-container" id="daysList">
-        <!-- Generato dinamicamente da JS -->
+    <div class="actions-bar">
+        <button class="btn-small" onclick="toggleAllMonths(true)">Apri Tutti i Mesi</button>
+        <button class="btn-small" onclick="toggleAllMonths(false)">Chiudi Tutti</button>
     </div>
 
-    <!-- Riepilogo Calcoli -->
+    <!-- Lista dei 12 Mesi -->
+    <div class="year-container" id="yearContainer">
+        <!-- Generato via JavaScript -->
+    </div>
+
+    <!-- Totale Annuo -->
     <div class="summary-box">
         <div class="summary-row">
-            <span>Ore Ordinarie Totali:</span>
-            <span id="totalStandardHours">0 hrs</span>
+            <span>Totale Ore Ordinarie Annue:</span>
+            <span id="yearStdHours">0 h</span>
         </div>
         <div class="summary-row">
-            <span>Ore Extra / Straordinari:</span>
-            <span id="totalOvertimeHours" style="color: var(--danger-color);">0 hrs</span>
+            <span>Totale Ore Straordinarie Annue:</span>
+            <span id="yearExtHours" style="color: var(--danger-color);">0 h</span>
         </div>
         <div class="summary-row">
-            <span>Compenso Base:</span>
-            <span id="basePay">0.00 €</span>
+            <span>Compenso Base Annuo:</span>
+            <span id="yearBasePay">0.00 €</span>
         </div>
         <div class="summary-row">
-            <span>Compenso Extra:</span>
-            <span id="overtimePay" style="color: var(--success-color);">+0.00 €</span>
+            <span>Compenso Straordinari Annuo:</span>
+            <span id="yearExtPay" style="color: var(--success-color);">+0.00 €</span>
         </div>
         <div class="summary-row total">
-            <span>Totale Guadagno:</span>
-            <span id="grandTotal">0.00 €</span>
+            <span>Totale Guadagno Annuo:</span>
+            <span id="yearGrandTotal">0.00 €</span>
         </div>
     </div>
 </div>
 
 <script>
-    const days = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+    const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    const dayNames = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 
-    // Inizializza i giorni
-    function initDays() {
-        const container = document.getElementById('daysList');
+    const yearSelect = document.getElementById('yearSelect');
+
+    function initYearSelector() {
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.innerText = y;
+            if (y === currentYear) opt.selected = true;
+            yearSelect.appendChild(opt);
+        }
+    }
+
+    function buildYearGrid() {
+        const year = parseInt(yearSelect.value);
+        const container = document.getElementById('yearContainer');
         container.innerHTML = '';
 
-        days.forEach((day, index) => {
-            const row = document.createElement('div');
-            row.className = 'day-row';
-            row.innerHTML = `
-                <span class="day-label">${day}</span>
-                <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
-                    <label>Ore lavorate:</label>
-                    <input type="number" class="day-input" id="day-${index}" value="${index < 5 ? 8 : 0}" min="0" max="24" step="0.5" oninput="calculate()" style="width: 80px; text-align: center;">
+        monthNames.forEach((mName, mIndex) => {
+            const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+            const savedData = loadSavedData(year, mIndex);
+
+            const card = document.createElement('div');
+            card.className = 'month-card';
+            card.id = `month-card-${mIndex}`;
+
+            let daysHTML = '';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, mIndex, d);
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const savedVal = savedData[d] !== undefined ? savedData[d] : '';
+
+                daysHTML += `
+                    <div class="day-row ${isWeekend ? 'weekend' : ''}">
+                        <span class="day-date">${d} ${mName.substring(0,3)} (${dayNames[dayOfWeek]})</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <input type="number" class="day-input" id="m-${mIndex}-d-${d}" value="${savedVal}" min="0" max="24" step="0.5" oninput="calculateAll()" style="width: 65px; text-align: center;">
+                            <span id="m-${mIndex}-info-${d}" style="font-size:0.75rem; width: 45px; text-align:right;">-</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="month-header" onclick="toggleMonth(${mIndex})">
+                    <div class="month-title">
+                        <span>${mName}</span>
+                        <span class="month-badge" id="badge-total-${mIndex}">0.00 €</span>
+                    </div>
+                    <span id="arrow-${mIndex}">▼</span>
+                </div>
+                <div class="month-body">
+                    <div style="margin-bottom:10px; display:flex; gap:10px;">
+                        <button class="btn-small" onclick="fillMonthWorkdays(${mIndex})">Compila Lun-Ven (Std)</button>
+                        <button class="btn-small" onclick="clearMonth(${mIndex})">Azzera Mese</button>
+                    </div>
+                    <div class="month-days-grid">
+                        ${daysHTML}
+                    </div>
                 </div>
             `;
-            container.appendChild(row);
+
+            container.appendChild(card);
+        });
+
+        calculateAll();
+    }
+
+    function toggleMonth(mIndex) {
+        const card = document.getElementById(`month-card-${mIndex}`);
+        const arrow = document.getElementById(`arrow-${mIndex}`);
+        card.classList.toggle('open');
+        arrow.innerText = card.classList.contains('open') ? '▲' : '▼';
+    }
+
+    function toggleAllMonths(open) {
+        monthNames.forEach((_, mIndex) => {
+            const card = document.getElementById(`month-card-${mIndex}`);
+            const arrow = document.getElementById(`arrow-${mIndex}`);
+            if (open) {
+                card.classList.add('open');
+                arrow.innerText = '▲';
+            } else {
+                card.classList.remove('open');
+                arrow.innerText = '▼';
+            }
         });
     }
 
-    // Funzione principale di calcolo
-    function calculate() {
+    function calculateAll() {
+        const year = parseInt(yearSelect.value);
         const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
         const standardLimit = parseFloat(document.getElementById('standardHours').value) || 0;
         const overtimeBonus = parseFloat(document.getElementById('overtimeBonus').value) || 0;
-
         const overtimeRate = hourlyRate * (1 + (overtimeBonus / 100));
 
-        let totalStandardHrs = 0;
-        let totalOvertimeHrs = 0;
+        let yearStdHrs = 0;
+        let yearExtHrs = 0;
 
-        for (let i = 0; i < days.length; i++) {
-            const hours = parseFloat(document.getElementById(`day-${i}`).value) || 0;
+        monthNames.forEach((_, mIndex) => {
+            const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+            let monthStdHrs = 0;
+            let monthExtHrs = 0;
+            const monthState = {};
 
-            if (hours > standardLimit) {
-                totalStandardHrs += standardLimit;
-                totalOvertimeHrs += (hours - standardLimit);
-            } else {
-                totalStandardHrs += hours;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const input = document.getElementById(`m-${mIndex}-d-${d}`);
+                if (!input) continue;
+
+                const hours = parseFloat(input.value) || 0;
+                monthState[d] = input.value;
+
+                const infoSpan = document.getElementById(`m-${mIndex}-info-${d}`);
+
+                if (hours > 0) {
+                    if (hours > standardLimit) {
+                        const std = standardLimit;
+                        const ext = hours - standardLimit;
+                        monthStdHrs += std;
+                        monthExtHrs += ext;
+                        infoSpan.innerText = `+${ext}h`;
+                        infoSpan.style.color = "var(--danger-color)";
+                    } else {
+                        monthStdHrs += hours;
+                        infoSpan.innerText = "OK";
+                        infoSpan.style.color = "var(--text-muted)";
+                    }
+                } else {
+                    infoSpan.innerText = "-";
+                    infoSpan.style.color = "var(--text-muted)";
+                }
             }
-        }
 
-        const basePay = totalStandardHrs * hourlyRate;
-        const overtimePay = totalOvertimeHrs * overtimeRate;
-        const grandTotal = basePay + overtimePay;
+            const monthTotalPay = (monthStdHrs * hourlyRate) + (monthExtHrs * overtimeRate);
+            document.getElementById(`badge-total-${mIndex}`).innerText = `${monthStdHrs + monthExtHrs}h | ${monthTotalPay.toFixed(2)} €`;
 
-        // Aggiorna la GUI
-        document.getElementById('totalStandardHours').innerText = `${totalStandardHrs.toFixed(1)} h`;
-        document.getElementById('totalOvertimeHours').innerText = `${totalOvertimeHrs.toFixed(1)} h`;
-        document.getElementById('basePay').innerText = `${basePay.toFixed(2)} €`;
-        document.getElementById('overtimePay').innerText = `+${overtimePay.toFixed(2)} €`;
-        document.getElementById('grandTotal').innerText = `${grandTotal.toFixed(2)} €`;
+            yearStdHrs += monthStdHrs;
+            yearExtHrs += monthExtHrs;
+
+            saveData(year, mIndex, monthState);
+        });
+
+        const yearBasePay = yearStdHrs * hourlyRate;
+        const yearExtPay = yearExtHrs * overtimeRate;
+        const yearGrandTotal = yearBasePay + yearExtPay;
+
+        document.getElementById('yearStdHours').innerText = `${yearStdHrs.toFixed(1)} h`;
+        document.getElementById('yearExtHours').innerText = `${yearExtHrs.toFixed(1)} h`;
+        document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
+        document.getElementById('yearExtPay').innerText = `+${yearExtPay.toFixed(2)} €`;
+        document.getElementById('yearGrandTotal').innerText = `${yearGrandTotal.toFixed(2)} €`;
     }
 
-    // Avvio iniziale
-    initDays();
-    calculate();
+    function fillMonthWorkdays(mIndex) {
+        const year = parseInt(yearSelect.value);
+        const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+        const stdHours = document.getElementById('standardHours').value || 8;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(year, mIndex, d);
+            const dayOfWeek = dateObj.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const input = document.getElementById(`m-${mIndex}-d-${d}`);
+                if (input) input.value = stdHours;
+            }
+        }
+        calculateAll();
+    }
+
+    function clearMonth(mIndex) {
+        const year = parseInt(yearSelect.value);
+        const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const input = document.getElementById(`m-${mIndex}-d-${d}`);
+            if (input) input.value = '';
+        }
+        calculateAll();
+    }
+
+    function saveData(year, month, data) {
+        const key = `work_hours_${year}_${month}`;
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function loadSavedData(year, month) {
+        const key = `work_hours_${year}_${month}`;
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : {};
+    }
+
+    initYearSelector();
+    buildYearGrid();
 </script>
 
 </body>
