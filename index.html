@@ -55,8 +55,8 @@
             --danger-color: #fb7185;
             --success-color: #34d399;
             --warning-color: #fbbf24;
-            --night-color: #a855f7;
-            --night-glow: rgba(168, 85, 247, 0.3);
+            --night-color: #c084fc;
+            --night-glow: rgba(192, 132, 252, 0.3);
             --weekend-bg: rgba(192, 132, 252, 0.08);
             --day-bg: rgba(15, 23, 42, 0.65);
         }
@@ -167,7 +167,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 1px rgba(255,255,255,0.1);
             padding: 16px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1050px;
             border: 1px solid var(--border-glow);
             backdrop-filter: blur(16px);
         }
@@ -443,45 +443,66 @@
         .day-controls-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
+        /* --- CONTROLLI AD ALTO RISALTO VISIVO (NEON & 3D) --- */
         .ctrl-pill-group {
             display: flex;
             align-items: center;
-            background: rgba(6, 9, 17, 0.6);
-            border-radius: 12px;
-            padding: 3px 5px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 4px;
+            border-radius: 14px;
+            padding: 4px 8px;
+            gap: 6px;
+            transition: all 0.2s ease;
         }
 
+        /* Variazioni Categoria ORD (Azzurro Neon) */
+        .ctrl-pill-group.ord-group {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .ctrl-pill-group.ord-group .ctrl-pill-label {
+            color: #38bdf8;
+            text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Variazioni Categoria EXTRA (Giallo/Ambra) */
+        .ctrl-pill-group.extra-group {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+        }
+        .ctrl-pill-group.extra-group .ctrl-pill-label {
+            color: #fbbf24;
+            text-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Variazioni Categoria NOTT (Viola Neon) */
         .ctrl-pill-group.night-group {
-            border-color: rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.05);
+            background: rgba(192, 132, 252, 0.08);
+            border: 1px solid rgba(192, 132, 252, 0.35);
+        }
+        .ctrl-pill-group.night-group .ctrl-pill-label {
+            color: #c084fc;
+            text-shadow: 0 0 6px rgba(192, 132, 252, 0.4);
         }
 
         .ctrl-pill-label {
-            font-size: 0.62rem;
-            color: var(--text-muted);
+            font-size: 0.68rem;
             font-weight: 900;
             padding: 0 3px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
-        .ctrl-pill-group.night-group .ctrl-pill-label {
-            color: var(--night-color);
-        }
-
+        /* Tasti + e - con Rilievo 3D e Ombre */
         .btn-touch {
-            background: rgba(30, 41, 59, 0.9);
+            background: linear-gradient(180deg, #2a374a 0%, #151d2a 100%);
             color: #ffffff;
-            border: 1px solid rgba(71, 85, 105, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             width: 32px;
             height: 32px;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 9px;
+            font-size: 1.15rem;
             font-weight: 900;
             display: flex;
             align-items: center;
@@ -489,23 +510,45 @@
             cursor: pointer;
             touch-action: manipulation;
             user-select: none;
-            transition: all 0.15s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.12s ease;
+        }
+
+        .btn-touch.btn-plus {
+            background: linear-gradient(180deg, #33435c 0%, #1e293b 100%);
+            border-color: rgba(255, 255, 255, 0.25);
         }
 
         .btn-touch:active {
-            background: var(--accent-color);
-            color: #000000;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
-            transform: scale(0.92);
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .ord-group .btn-touch.btn-plus:active {
+            background: #0284c7;
+            border-color: #38bdf8;
+            color: #fff;
+        }
+
+        .extra-group .btn-touch.btn-plus:active {
+            background: #d97706;
+            border-color: #fbbf24;
+            color: #fff;
+        }
+
+        .night-group .btn-touch.btn-plus:active {
+            background: #9333ea;
+            border-color: #c084fc;
+            color: #fff;
         }
 
         .touch-val {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 900;
-            width: 22px;
+            width: 24px;
             text-align: center;
             color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .summary-box {
@@ -586,6 +629,7 @@
             .ctrl-pill-group {
                 flex: 1;
                 justify-content: space-between;
+                padding: 3px 5px;
             }
             .btn-touch {
                 width: 28px;
@@ -593,8 +637,11 @@
                 font-size: 0.95rem;
             }
             .touch-val {
-                font-size: 0.85rem;
+                font-size: 0.9rem;
                 width: 16px;
+            }
+            .ctrl-pill-label {
+                font-size: 0.6rem;
             }
         }
     </style>
@@ -836,25 +883,25 @@
                         </div>
 
                         <div class="day-controls-right">
-                            <div class="ctrl-pill-group">
+                            <div class="ctrl-pill-group ord-group">
                                 <span class="ctrl-pill-label">ORD</span>
                                 <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
                                 <span class="touch-val" id="val-m${mIndex}-d${d}-ord">0</span>
-                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
+                                <button class="btn-touch btn-plus" onclick="changeHours(${mIndex}, ${d}, 'ord', 1)">+</button>
                             </div>
 
-                            <div class="ctrl-pill-group">
+                            <div class="ctrl-pill-group extra-group">
                                 <span class="ctrl-pill-label">EXTRA</span>
                                 <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', -1)">-</button>
                                 <span class="touch-val" id="val-m${mIndex}-d${d}-ext">0</span>
-                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
+                                <button class="btn-touch btn-plus" onclick="changeHours(${mIndex}, ${d}, 'ext', 1)">+</button>
                             </div>
 
                             <div class="ctrl-pill-group night-group">
                                 <span class="ctrl-pill-label">NOTT</span>
                                 <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'night', -1)">-</button>
                                 <span class="touch-val" id="val-m${mIndex}-d${d}-night">0</span>
-                                <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'night', 1)">+</button>
+                                <button class="btn-touch btn-plus" onclick="changeHours(${mIndex}, ${d}, 'night', 1)">+</button>
                             </div>
                         </div>
                     </div>
@@ -1013,7 +1060,6 @@
                 updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
             });
 
-            // Calcolo importo notturno
             const monthNightPay = monthNightHrs * nightRate;
             const totalExtraAndNightPay = monthPaidExtPay + monthNightPay;
 
