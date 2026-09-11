@@ -46,8 +46,10 @@
             --card-bg: rgba(15, 23, 42, 0.7);
             --accent-color: #38bdf8;
             --accent-glow: rgba(56, 189, 248, 0.35);
-            --purple-color: #c084fc;
-            --purple-glow: rgba(192, 132, 252, 0.25);
+            --purple-color: #e081f9;
+            --purple-glow: rgba(224, 129, 249, 0.45);
+            --saturday-color: #f59e0b;
+            --saturday-glow: rgba(245, 158, 11, 0.4);
             --text-color: #f8fafc;
             --text-muted: #64748b;
             --border-color: rgba(51, 65, 85, 0.6);
@@ -56,9 +58,9 @@
             --success-color: #34d399;
             --warning-color: #fbbf24;
             --night-color: #c084fc;
-            --night-glow: rgba(192, 132, 252, 0.3);
-            --weekend-bg: rgba(192, 132, 252, 0.08);
             --day-bg: rgba(15, 23, 42, 0.65);
+            --saturday-bg: rgba(245, 158, 11, 0.12);
+            --sunday-bg: rgba(224, 129, 249, 0.14);
         }
 
         * {
@@ -73,7 +75,7 @@
             background-color: var(--bg-color);
             background-image: 
                 radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.08) 0px, transparent 50%);
+                radial-gradient(at 100% 100%, rgba(224, 129, 249, 0.08) 0px, transparent 50%);
             color: var(--text-color);
             display: flex;
             justify-content: center;
@@ -154,10 +156,6 @@
             cursor: pointer;
             box-shadow: 0 4px 15px var(--accent-glow);
             transition: transform 0.1s ease;
-        }
-
-        .login-card button:active {
-            transform: scale(0.98);
         }
 
         .container {
@@ -374,19 +372,41 @@
             backdrop-filter: blur(8px);
         }
 
-        .day-card-row:hover {
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 0 12px var(--accent-glow);
+        /* GRAFICA SPECIFICA SABATO E DOMENICA */
+        .day-card-row.saturday {
+            background: var(--saturday-bg);
+            border: 1.5px solid var(--saturday-color);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
         }
 
-        .day-card-row.weekend {
-            background: var(--weekend-bg);
-            border-color: rgba(192, 132, 252, 0.25);
+        .day-card-row.saturday .day-num-circle {
+            color: #ffffff;
+            background: rgba(245, 158, 11, 0.25);
+            border-color: var(--saturday-color);
+            box-shadow: 0 0 8px var(--saturday-glow);
         }
 
-        .day-card-row.weekend:hover {
+        .day-card-row.saturday .day-name-label {
+            color: var(--saturday-color);
+            font-weight: 900;
+        }
+
+        .day-card-row.sunday {
+            background: var(--sunday-bg);
+            border: 1.5px solid var(--purple-color);
+            box-shadow: 0 0 12px rgba(224, 129, 249, 0.2);
+        }
+
+        .day-card-row.sunday .day-num-circle {
+            color: #ffffff;
+            background: rgba(224, 129, 249, 0.25);
             border-color: var(--purple-color);
-            box-shadow: 0 0 12px var(--purple-glow);
+            box-shadow: 0 0 10px var(--purple-glow);
+        }
+
+        .day-card-row.sunday .day-name-label {
+            color: var(--purple-color);
+            font-weight: 900;
         }
 
         .day-info-left {
@@ -411,12 +431,6 @@
             flex-shrink: 0;
         }
 
-        .day-card-row.weekend .day-num-circle {
-            color: var(--purple-color);
-            border-color: rgba(192, 132, 252, 0.4);
-            box-shadow: 0 0 8px var(--purple-glow);
-        }
-
         .day-date-text {
             display: flex;
             flex-direction: column;
@@ -427,10 +441,6 @@
             font-weight: 800;
             color: var(--text-color);
             text-transform: capitalize;
-        }
-
-        .day-card-row.weekend .day-name-label {
-            color: var(--purple-color);
         }
 
         .day-tag {
@@ -530,24 +540,6 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        .ord-group .btn-touch.btn-plus:active {
-            background: #0284c7;
-            border-color: #38bdf8;
-            color: #fff;
-        }
-
-        .extra-group .btn-touch.btn-plus:active {
-            background: #d97706;
-            border-color: #fbbf24;
-            color: #fff;
-        }
-
-        .night-group .btn-touch.btn-plus:active {
-            background: #9333ea;
-            border-color: #c084fc;
-            color: #fff;
-        }
-
         .touch-val {
             font-size: 1.05rem;
             font-weight: 900;
@@ -592,12 +584,6 @@
             margin-top: 6px;
         }
 
-        .reimbursement-input-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         .reimbursement-input-box input {
             width: 90px;
             padding: 6px 8px;
@@ -608,64 +594,31 @@
             font-weight: bold;
         }
 
+        .backup-panel {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 620px) {
-            body {
-                padding: 4px;
-            }
-            .container {
-                padding: 10px;
-                border-radius: 16px;
-            }
-            .header-left {
-                gap: 8px;
-            }
-            .logo-onair {
-                padding: 4px 8px;
-            }
-            .logo-onair .text-onair {
-                font-size: 1rem;
-            }
-            .logo-onair .text-multimedia {
-                font-size: 0.48rem;
-            }
-            .title-box h1 {
-                font-size: 0.92rem;
-            }
-            .title-box .subtitle-name {
-                font-size: 0.85rem;
-            }
-            .day-card-row {
-                padding: 8px;
-                gap: 4px;
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .day-info-left {
-                justify-content: space-between;
-                min-width: 100%;
-            }
-            .day-controls-right {
-                justify-content: space-between;
-                gap: 4px;
-                margin-top: 4px;
-            }
-            .ctrl-pill-group {
-                flex: 1;
-                justify-content: space-between;
-                padding: 3px 5px;
-            }
-            .btn-touch {
-                width: 28px;
-                height: 28px;
-                font-size: 0.95rem;
-            }
-            .touch-val {
-                font-size: 0.9rem;
-                width: 16px;
-            }
-            .ctrl-pill-label {
-                font-size: 0.6rem;
-            }
+            body { padding: 4px; }
+            .container { padding: 10px; border-radius: 16px; }
+            .header-left { gap: 8px; }
+            .logo-onair { padding: 4px 8px; }
+            .logo-onair .text-onair { font-size: 1rem; }
+            .logo-onair .text-multimedia { font-size: 0.48rem; }
+            .title-box h1 { font-size: 0.92rem; }
+            .title-box .subtitle-name { font-size: 0.85rem; }
+            .day-card-row { padding: 8px; gap: 4px; flex-direction: column; align-items: stretch; }
+            .day-info-left { justify-content: space-between; min-width: 100%; }
+            .day-controls-right { justify-content: space-between; gap: 4px; margin-top: 4px; }
+            .ctrl-pill-group { flex: 1; justify-content: space-between; padding: 3px 5px; }
+            .btn-touch { width: 28px; height: 28px; font-size: 0.95rem; }
+            .touch-val { font-size: 0.9rem; width: 16px; }
+            .ctrl-pill-label { font-size: 0.6rem; }
         }
     </style>
 </head>
@@ -741,6 +694,12 @@
                     <input type="text" id="appPassword" value="1234" onchange="saveCloudPassword()">
                 </div>
             </div>
+
+            <div class="backup-panel">
+                <button class="btn-small" onclick="exportBackupJSON()" style="color: var(--success-color); border-color: rgba(52,211,153,0.4);">📥 Esporta Backup (JSON)</button>
+                <button class="btn-small" onclick="triggerRestoreJSON()" style="color: var(--warning-color); border-color: rgba(251,191,36,0.4);">📤 Ripristina Backup</button>
+                <input type="file" id="restoreFileInput" style="display:none;" accept=".json" onchange="importBackupJSON(event)">
+            </div>
         </div>
     </div>
 
@@ -810,7 +769,6 @@
 
     async function checkPass() {
         const entered = document.getElementById('passInput').value;
-        
         if (window.firebaseReady) {
             try {
                 const passRef = window.dbRef(window.db, 'app_config/password');
@@ -834,7 +792,6 @@
         const newPass = document.getElementById('appPassword').value;
         if (!newPass) return;
         currentCloudPassword = newPass;
-        
         if (window.firebaseReady) {
             const passRef = window.dbRef(window.db, 'app_config/password');
             window.dbSet(passRef, newPass).then(() => {
@@ -922,11 +879,16 @@
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
-                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const isSat = (dayOfWeek === 6);
+                const isSun = (dayOfWeek === 0);
                 const dayNameStr = weekDaysFull[dayOfWeek];
 
+                let dayClass = "";
+                if (isSat) dayClass = "saturday";
+                if (isSun) dayClass = "sunday";
+
                 feedHTML += `
-                    <div class="day-card-row ${isWeekend ? 'weekend' : ''}">
+                    <div class="day-card-row ${dayClass}">
                         <div class="day-info-left">
                             <div class="day-num-circle">${d}</div>
                             <div class="day-date-text">
@@ -1061,7 +1023,7 @@
 
     function changeHours(mIndex, d, type, delta) {
         const st = document.getElementById(`status-m${mIndex}-d${d}`).value;
-        if (st === 'FERIE' || st === 'MALATTIA') return; // Blocca inserimento ore in ferie o malattia
+        if (st === 'FERIE' || st === 'MALATTIA') return;
 
         const el = document.getElementById(`val-m${mIndex}-d${d}-${type}`);
         if (!el) return;
@@ -1137,7 +1099,6 @@
                 const dateObj = new Date(year, mIndex, d);
                 const dayOfWeek = dateObj.getDay();
 
-                // Calcolo coperture retribuite per lo stipendio base
                 if (st === 'WORK' && (ordHours > 0 || extHours > 0 || nightHours > 0)) {
                     monthPaidDays++;
                 } else if (st === 'PERM') {
@@ -1182,10 +1143,10 @@
 
                 if (entry.dayOfWeek === 6) {
                     monthExtraOveragePay += (entry.hours * saturdayOvertimeRate);
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Sabato (€)`, "var(--success-color)");
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Sabato (€)`, "var(--saturday-color)");
                 } else if (entry.dayOfWeek === 0) {
                     monthExtraOveragePay += (entry.hours * sundayOvertimeRate);
-                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Festivo (€)`, "var(--success-color)");
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Festivo (€)`, "var(--purple-color)");
                 } else {
                     for (let h = 0; h < entry.hours; h += 1) {
                         accumulatedWeekdayOvertime += 1;
@@ -1347,6 +1308,51 @@
             const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
             window.dbSet(pathRef, null);
         }
+    }
+
+    async function exportBackupJSON() {
+        if (!window.firebaseReady) return alert("Firebase non collegato!");
+        const yearSelect = document.getElementById('yearSelect');
+        const year = yearSelect.value;
+        
+        const yearRef = window.dbRef(window.db, `work_data/${year}`);
+        const snapshot = await window.dbGet(yearRef);
+        const data = snapshot.exists() ? snapshot.val() : {};
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `backup_foglio_ore_${year}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function triggerRestoreJSON() {
+        document.getElementById('restoreFileInput').click();
+    }
+
+    function importBackupJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                const yearSelect = document.getElementById('yearSelect');
+                const year = yearSelect.value;
+
+                if (confirm(`Sei sicuro di voler ripristinare il backup per l'anno ${year}? I dati attuali verranno sovrascritti.`)) {
+                    const yearRef = window.dbRef(window.db, `work_data/${year}`);
+                    await window.dbSet(yearRef, data);
+                    alert("Backup ripristinato con successo!");
+                }
+            } catch (err) {
+                alert("Errore nel formato del file di backup JSON.");
+            }
+        };
+        reader.readAsText(file);
     }
 
     function attachFirebaseListener() {
