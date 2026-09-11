@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calcolatore Ore & Straordinari - Santoro Carlo</title>
+
+    <!-- Supporto PWA App -->
+    <meta name="theme-color" content="#060911">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Foglio Ore">
+
     <!-- SDK Firebase CDN (Modulo V9) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
       import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-      // --- CONFIGURAZIONE FIREBASE ---
       const firebaseConfig = {
         apiKey: "AIzaSyDG_hTDelv6-c0FGMcrMqFUC6IxcczLqLU",
         authDomain: "foglio-ore-on-air-carlo.firebaseapp.com",
@@ -155,7 +161,6 @@
             font-size: 1rem;
             cursor: pointer;
             box-shadow: 0 4px 15px var(--accent-glow);
-            transition: transform 0.1s ease;
         }
 
         .container {
@@ -249,9 +254,7 @@
             scrollbar-width: none;
         }
 
-        .tabs-bar::-webkit-scrollbar {
-            display: none;
-        }
+        .tabs-bar::-webkit-scrollbar { display: none; }
 
         .tab-btn {
             background-color: rgba(11, 19, 41, 0.8);
@@ -274,13 +277,8 @@
             box-shadow: 0 0 14px var(--accent-glow);
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         .master-panel {
             background: rgba(6, 9, 17, 0.6);
@@ -372,7 +370,6 @@
             backdrop-filter: blur(8px);
         }
 
-        /* GRAFICA SPECIFICA SABATO E DOMENICA */
         .day-card-row.saturday {
             background: var(--saturday-bg);
             border: 1.5px solid var(--saturday-color);
@@ -431,30 +428,11 @@
             flex-shrink: 0;
         }
 
-        .day-date-text {
-            display: flex;
-            flex-direction: column;
-        }
+        .day-date-text { display: flex; flex-direction: column; }
+        .day-name-label { font-size: 0.88rem; font-weight: 800; color: var(--text-color); text-transform: capitalize; }
+        .day-tag { font-size: 0.72rem; font-weight: 800; margin-top: 1px; }
 
-        .day-name-label {
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: var(--text-color);
-            text-transform: capitalize;
-        }
-
-        .day-tag {
-            font-size: 0.72rem;
-            font-weight: 800;
-            margin-top: 1px;
-        }
-
-        .day-controls-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .day-controls-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
         .status-select {
             padding: 5px 8px;
@@ -474,42 +452,16 @@
             border-radius: 14px;
             padding: 4px 8px;
             gap: 6px;
-            transition: all 0.2s ease;
         }
 
-        .ctrl-pill-group.ord-group {
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        .ctrl-pill-group.ord-group .ctrl-pill-label {
-            color: #38bdf8;
-            text-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
-        }
+        .ctrl-pill-group.ord-group { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .ctrl-pill-group.ord-group .ctrl-pill-label { color: #38bdf8; }
+        .ctrl-pill-group.extra-group { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.35); }
+        .ctrl-pill-group.extra-group .ctrl-pill-label { color: #fbbf24; }
+        .ctrl-pill-group.night-group { background: rgba(192, 132, 252, 0.08); border: 1px solid rgba(192, 132, 252, 0.35); }
+        .ctrl-pill-group.night-group .ctrl-pill-label { color: #c084fc; }
 
-        .ctrl-pill-group.extra-group {
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.35);
-        }
-        .ctrl-pill-group.extra-group .ctrl-pill-label {
-            color: #fbbf24;
-            text-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
-        }
-
-        .ctrl-pill-group.night-group {
-            background: rgba(192, 132, 252, 0.08);
-            border: 1px solid rgba(192, 132, 252, 0.35);
-        }
-        .ctrl-pill-group.night-group .ctrl-pill-label {
-            color: #c084fc;
-            text-shadow: 0 0 6px rgba(192, 132, 252, 0.4);
-        }
-
-        .ctrl-pill-label {
-            font-size: 0.68rem;
-            font-weight: 900;
-            padding: 0 3px;
-            letter-spacing: 0.8px;
-        }
+        .ctrl-pill-label { font-size: 0.68rem; font-weight: 900; padding: 0 3px; letter-spacing: 0.8px; }
 
         .btn-touch {
             background: linear-gradient(180deg, #2a374a 0%, #151d2a 100%);
@@ -526,28 +478,12 @@
             cursor: pointer;
             touch-action: manipulation;
             user-select: none;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transition: all 0.12s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
         }
 
-        .btn-touch.btn-plus {
-            background: linear-gradient(180deg, #33435c 0%, #1e293b 100%);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
+        .btn-touch.btn-plus { background: linear-gradient(180deg, #33435c 0%, #1e293b 100%); }
 
-        .btn-touch:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .touch-val {
-            font-size: 1.05rem;
-            font-weight: 900;
-            width: 24px;
-            text-align: center;
-            color: #ffffff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-        }
+        .touch-val { font-size: 1.05rem; font-weight: 900; width: 24px; text-align: center; color: #ffffff; }
 
         .summary-box {
             background: rgba(6, 9, 17, 0.85);
@@ -557,50 +493,30 @@
             padding: 18px;
         }
 
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 7px;
-            font-size: 0.88rem;
+        .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 0.88rem; }
+        .summary-row.total-gross { font-size: 1rem; font-weight: bold; color: var(--text-color); border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 6px; }
+        .summary-row.total-net { font-size: 1.25rem; font-weight: 900; color: var(--success-color); border-top: 1px dashed var(--accent-color); padding-top: 8px; margin-top: 6px; }
+
+        .reimbursement-input-box input { width: 90px; padding: 6px 8px; font-size: 0.9rem; text-align: right; border-color: rgba(52, 211, 153, 0.4); color: var(--success-color); font-weight: bold; }
+
+        .backup-panel { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border-color); display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .ratei-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.82rem;
         }
 
-        .summary-row.total-gross {
-            font-size: 1rem;
-            font-weight: bold;
-            color: var(--text-color);
-            border-top: 1px solid var(--border-color);
-            padding-top: 8px;
-            margin-top: 6px;
+        .ratei-table th, .ratei-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: center;
         }
 
-        .summary-row.total-net {
-            font-size: 1.25rem;
-            font-weight: 900;
-            color: var(--success-color);
-            text-shadow: 0 0 8px rgba(52, 211, 153, 0.35);
-            border-top: 1px dashed var(--accent-color);
-            padding-top: 8px;
-            margin-top: 6px;
-        }
-
-        .reimbursement-input-box input {
-            width: 90px;
-            padding: 6px 8px;
-            font-size: 0.9rem;
-            text-align: right;
-            border-color: rgba(52, 211, 153, 0.4);
-            color: var(--success-color);
-            font-weight: bold;
-        }
-
-        .backup-panel {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px dashed var(--border-color);
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .ratei-table th {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
         }
 
         @media (max-width: 620px) {
@@ -695,6 +611,22 @@
                 </div>
             </div>
 
+            <h3 style="font-size: 0.88rem; color: var(--accent-color); margin-top: 18px; margin-bottom: 8px;">Saldi Iniziali Ratei (Da Cedolino AP)</h3>
+            <div class="grid-config">
+                <div class="input-group">
+                    <label for="initFerie">Saldo Iniziale Ferie (GG)</label>
+                    <input type="number" id="initFerie" value="3.30" step="0.1" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
+                    <label for="initRol">Saldo Iniziale ROL (Ore)</label>
+                    <input type="number" id="initRol" value="61.50" step="0.5" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
+                    <label for="initExFest">Saldo Iniziale Ex-Festività (Ore)</label>
+                    <input type="number" id="initExFest" value="151.00" step="0.5" oninput="calculateAll()">
+                </div>
+            </div>
+
             <div class="backup-panel">
                 <button class="btn-small" onclick="exportBackupJSON()" style="color: var(--success-color); border-color: rgba(52,211,153,0.4);">📥 Esporta Backup (JSON)</button>
                 <button class="btn-small" onclick="triggerRestoreJSON()" style="color: var(--warning-color); border-color: rgba(251,191,36,0.4);">📤 Ripristina Backup</button>
@@ -708,54 +640,45 @@
     <div class="tab-content" id="tab-annual">
         <div class="summary-box">
             <h2 style="font-size: 1.05rem; color: var(--accent-color); margin-bottom: 12px; text-shadow: 0 0 8px var(--accent-glow);">Bilancio Complessivo Anno</h2>
-            <div class="summary-row">
-                <span>Giornate Retribuite Totali Annue:</span>
-                <span id="yearWorkDays">0 giorni</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Ore Ordinarie Lavorate:</span>
-                <span id="yearStdHours">0 h</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Ore Permessi (ROL / Ex-Fest):</span>
-                <span id="yearPermitHours" style="color: #60a5fa;">0 h</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Giorni Ferie / Malattia:</span>
-                <span id="yearVacationDays" style="color: #f43f5e;">0 gg</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Ore Extra Inserite:</span>
-                <span id="yearExtHours" style="color: var(--warning-color);">0 h</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Ore Notturne Inserite:</span>
-                <span id="yearNightHours" style="color: var(--night-color);">0 h</span>
-            </div>
-            <div class="summary-row">
-                <span>Stipendio Base Proporzionato Maturato:</span>
-                <span id="yearBasePay">0.00 €</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Forfait Straordinario Annuo:</span>
-                <span id="yearForfaitPay" style="color: var(--accent-color);">0.00 €</span>
-            </div>
-            <div class="summary-row">
-                <span>Compenso Extra Oltre Forfait / Weekend / Notte:</span>
-                <span id="yearExtPay" style="color: var(--warning-color);">+0.00 €</span>
-            </div>
-            <div class="summary-row">
-                <span>Totale Rimborsi / Trasferte Annui:</span>
-                <span id="yearReimbursementsPay" style="color: var(--success-color);">+0.00 €</span>
-            </div>
-            <div class="summary-row total-gross">
-                <span>Totale Lordo Annuo:</span>
-                <span id="yearGrossTotal">0.00 €</span>
-            </div>
-            <div class="summary-row total-net">
-                <span>Stima Netto in Busta Annuo:</span>
-                <span id="yearNetTotal">0.00 €</span>
-            </div>
+            <div class="summary-row"><span>Giornate Retribuite Totali Annue:</span><span id="yearWorkDays">0 giorni</span></div>
+            <div class="summary-row"><span>Totale Ore Ordinarie Lavorate:</span><span id="yearStdHours">0 h</span></div>
+            <div class="summary-row"><span>Totale Ore Permessi (ROL / Ex-Fest):</span><span id="yearPermitHours" style="color: #60a5fa;">0 h</span></div>
+            <div class="summary-row"><span>Totale Giorni Ferie / Malattia:</span><span id="yearVacationDays" style="color: #f43f5e;">0 gg</span></div>
+            <div class="summary-row"><span>Totale Ore Extra Inserite:</span><span id="yearExtHours" style="color: var(--warning-color);">0 h</span></div>
+            <div class="summary-row"><span>Totale Ore Notturne Inserite:</span><span id="yearNightHours" style="color: var(--night-color);">0 h</span></div>
+            <div class="summary-row"><span>Stipendio Base Proporzionato Maturato:</span><span id="yearBasePay">0.00 €</span></div>
+            <div class="summary-row"><span>Totale Forfait Straordinario Annuo:</span><span id="yearForfaitPay" style="color: var(--accent-color);">0.00 €</span></div>
+            <div class="summary-row"><span>Compenso Extra Oltre Forfait / Weekend / Notte:</span><span id="yearExtPay" style="color: var(--warning-color);">+0.00 €</span></div>
+            <div class="summary-row"><span>Totale Rimborsi / Trasferte Annui:</span><span id="yearReimbursementsPay" style="color: var(--success-color);">+0.00 €</span></div>
+            
+            <div class="summary-row total-gross"><span>Totale Lordo Annuo:</span><span id="yearGrossTotal">0.00 €</span></div>
+            <div class="summary-row total-net"><span>Stima Netto in Busta Annuo:</span><span id="yearNetTotal">0.00 €</span></div>
+
+            <h3 style="font-size: 0.95rem; color: var(--accent-color); margin-top: 18px; margin-bottom: 8px;">Monitoraggio Ratei & Ferie Residui</h3>
+            <table class="ratei-table">
+                <thead>
+                    <tr>
+                        <th>Voce</th>
+                        <th>Iniziale</th>
+                        <th>Goduto Annuo</th>
+                        <th>Saldo Residuo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Ferie (Giorni)</strong></td>
+                        <td id="rateiInizFerie">0 gg</td>
+                        <td id="rateiGodFerie" style="color: #f43f5e;">0 gg</td>
+                        <td id="rateiResFerie" style="color: var(--success-color); font-weight: bold;">0 gg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Permessi ROL / Ex-Fest (Ore)</strong></td>
+                        <td id="rateiInizRol">0 h</td>
+                        <td id="rateiGodRol" style="color: #60a5fa;">0 h</td>
+                        <td id="rateiResRol" style="color: var(--success-color); font-weight: bold;">0 h</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -773,9 +696,7 @@
             try {
                 const passRef = window.dbRef(window.db, 'app_config/password');
                 const snapshot = await window.dbGet(passRef);
-                if (snapshot.exists()) {
-                    currentCloudPassword = snapshot.val();
-                }
+                if (snapshot.exists()) currentCloudPassword = snapshot.val();
             } catch(e) {}
         }
 
@@ -794,9 +715,7 @@
         currentCloudPassword = newPass;
         if (window.firebaseReady) {
             const passRef = window.dbRef(window.db, 'app_config/password');
-            window.dbSet(passRef, newPass).then(() => {
-                alert("Nuova password salvata e sincronizzata!");
-            });
+            window.dbSet(passRef, newPass).then(() => alert("Nuova password salvata e sincronizzata!"));
         }
     }
 
@@ -811,8 +730,7 @@
         const currentYear = new Date().getFullYear();
         for (let y = currentYear - 2; y <= currentYear + 2; y++) {
             const opt = document.createElement('option');
-            opt.value = y;
-            opt.innerText = y;
+            opt.value = y; opt.innerText = y;
             if (y === currentYear) opt.selected = true;
             yearSelect.appendChild(opt);
         }
@@ -869,7 +787,6 @@
 
         monthNames.forEach((mName, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
-
             const tabDiv = document.createElement('div');
             tabDiv.className = 'tab-content';
             tabDiv.id = `tab-month-${mIndex}`;
@@ -935,7 +852,7 @@
 
             tabDiv.innerHTML = `
                 <div class="actions-bar">
-                    <h2 style="font-size: 1.1rem; color: var(--accent-color); text-shadow: 0 0 8px var(--accent-glow);">${mName} ${year}</h2>
+                    <h2 style="font-size: 1.1rem; color: var(--accent-color);">${mName} ${year}</h2>
                     <div>
                         <button class="btn-small" onclick="fillMonthWorkdays(${mIndex})">Compila Lun-Ven (8h)</button>
                         <button class="btn-small" onclick="clearMonth(${mIndex})">Azzera Mese</button>
@@ -945,56 +862,18 @@
                 ${feedHTML}
 
                 <div class="summary-box">
-                    <div class="summary-row">
-                        <span>Giornate Retribuite Effettive:</span>
-                        <span id="summary-worked-days-${mIndex}">0 / 0 giorni</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Ore Ordinarie Lavorate:</span>
-                        <span id="summary-std-${mIndex}">0 h</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Ore Permessi Usufruite (ROL/Ex-Fest):</span>
-                        <span id="summary-perm-${mIndex}" style="color: #60a5fa;">0 h</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Giorni Ferie / Malattia:</span>
-                        <span id="summary-vac-${mIndex}" style="color: #f43f5e;">0 gg</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Ore Extra Inserite:</span>
-                        <span id="summary-ext-${mIndex}" style="color: var(--warning-color);">0 h</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Ore Notturne Inserite:</span>
-                        <span id="summary-night-${mIndex}" style="color: var(--night-color);">0 h</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Stipendio Base Proporzionato:</span>
-                        <span id="summary-base-pay-${mIndex}">0.00 €</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Indennità Forfait Straordinari (Fissa):</span>
-                        <span id="summary-forfait-pay-${mIndex}" style="color: var(--accent-color);">+0.00 €</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Compenso Extra Oltre Forfait / Weekend / Notte:</span>
-                        <span id="summary-ext-pay-${mIndex}" style="color: var(--warning-color);">+0.00 €</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Rimborsi / Trasferte Man. (€):</span>
-                        <div class="reimbursement-input-box">
-                            <input type="number" id="reimbursement-m${mIndex}" value="0.00" step="10" oninput="onReimbursementChange(${mIndex})">
-                        </div>
-                    </div>
-                    <div class="summary-row total-gross">
-                        <span>Totale Lordo Mese:</span>
-                        <span id="summary-gross-${mIndex}">0.00 €</span>
-                    </div>
-                    <div class="summary-row total-net">
-                        <span>Stima Netto in Busta:</span>
-                        <span id="summary-net-${mIndex}">0.00 €</span>
-                    </div>
+                    <div class="summary-row"><span>Giornate Retribuite Effettive:</span><span id="summary-worked-days-${mIndex}">0 / 0 giorni</span></div>
+                    <div class="summary-row"><span>Ore Ordinarie Lavorate:</span><span id="summary-std-${mIndex}">0 h</span></div>
+                    <div class="summary-row"><span>Ore Permessi Usufruite (ROL/Ex-Fest):</span><span id="summary-perm-${mIndex}" style="color: #60a5fa;">0 h</span></div>
+                    <div class="summary-row"><span>Giorni Ferie / Malattia:</span><span id="summary-vac-${mIndex}" style="color: #f43f5e;">0 gg</span></div>
+                    <div class="summary-row"><span>Ore Extra Inserite:</span><span id="summary-ext-${mIndex}" style="color: var(--warning-color);">0 h</span></div>
+                    <div class="summary-row"><span>Ore Notturne Inserite:</span><span id="summary-night-${mIndex}" style="color: var(--night-color);">0 h</span></div>
+                    <div class="summary-row"><span>Stipendio Base Proporzionato:</span><span id="summary-base-pay-${mIndex}">0.00 €</span></div>
+                    <div class="summary-row"><span>Indennità Forfait Straordinari (Fissa):</span><span id="summary-forfait-pay-${mIndex}" style="color: var(--accent-color);">+0.00 €</span></div>
+                    <div class="summary-row"><span>Compenso Extra Oltre Forfait / Weekend / Notte:</span><span id="summary-ext-pay-${mIndex}" style="color: var(--warning-color);">+0.00 €</span></div>
+                    <div class="summary-row"><span>Rimborsi / Trasferte Man. (€):</span><div class="reimbursement-input-box"><input type="number" id="reimbursement-m${mIndex}" value="0.00" step="10" oninput="onReimbursementChange(${mIndex})"></div></div>
+                    <div class="summary-row total-gross"><span>Totale Lordo Mese:</span><span id="summary-gross-${mIndex}">0.00 €</span></div>
+                    <div class="summary-row total-net"><span>Stima Netto in Busta:</span><span id="summary-net-${mIndex}">0.00 €</span></div>
                 </div>
             `;
 
@@ -1060,6 +939,10 @@
         const nightRate = parseFloat(document.getElementById('nightRate').value) || 0;
         const taxRate = (parseFloat(document.getElementById('taxDeductionRate').value) || 0) / 100;
 
+        const initFerie = parseFloat(document.getElementById('initFerie').value) || 0;
+        const initRol = parseFloat(document.getElementById('initRol').value) || 0;
+        const initExFest = parseFloat(document.getElementById('initExFest').value) || 0;
+
         let yearWorkedDays = 0;
         let yearStdHrs = 0;
         let yearPermitHrs = 0;
@@ -1108,7 +991,7 @@
                 } else if (st === 'FERIE' || st === 'MALATTIA' || st === 'FEST') {
                     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                         monthPaidDays++;
-                        if (st === 'FERIE' || st === 'MALATTIA') monthVacationDays++;
+                        if (st === 'FERIE') monthVacationDays++;
                     }
                 }
 
@@ -1117,11 +1000,7 @@
 
                 if (extHours > 0) {
                     monthExtHrs += extHours;
-                    overtimeEntries.push({
-                        day: d,
-                        hours: extHours,
-                        dayOfWeek: dayOfWeek
-                    });
+                    overtimeEntries.push({ day: d, hours: extHours, dayOfWeek: dayOfWeek });
                 } else {
                     let tagParts = [];
                     if (st === 'PERM') tagParts.push(`Permesso (${8 - ordHours}h)`);
@@ -1150,13 +1029,10 @@
                 } else {
                     for (let h = 0; h < entry.hours; h += 1) {
                         accumulatedWeekdayOvertime += 1;
-                        if (accumulatedWeekdayOvertime > 20) {
-                            paidHoursInThisEntry += 1;
-                        }
+                        if (accumulatedWeekdayOvertime > 20) paidHoursInThisEntry += 1;
                     }
 
                     monthExtraOveragePay += (paidHoursInThisEntry * weekdayOvertimeRate);
-
                     let tagTxt = paidHoursInThisEntry > 0 ? `+${entry.hours}h (${paidHoursInThisEntry}h €)` : `+${entry.hours}h (Forfait)`;
                     updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
                 }
@@ -1235,6 +1111,16 @@
         document.getElementById('yearReimbursementsPay').innerText = `+${yearReimbursementsPay.toFixed(2)} €`;
         document.getElementById('yearGrossTotal').innerText = `${yearGrossTotal.toFixed(2)} €`;
         document.getElementById('yearNetTotal').innerText = `${yearNetTotal.toFixed(2)} €`;
+
+        // TABELLA RATEI E RESIDUI
+        const totalInitPermitHours = initRol + initExFest;
+        document.getElementById('rateiInizFerie').innerText = `${initFerie.toFixed(2)} gg`;
+        document.getElementById('rateiGodFerie').innerText = `${yearVacationDays} gg`;
+        document.getElementById('rateiResFerie').innerText = `${(initFerie - yearVacationDays).toFixed(2)} gg`;
+
+        document.getElementById('rateiInizRol').innerText = `${totalInitPermitHours.toFixed(2)} h`;
+        document.getElementById('rateiGodRol').innerText = `${yearPermitHrs} h`;
+        document.getElementById('rateiResRol').innerText = `${(totalInitPermitHours - yearPermitHrs).toFixed(2)} h`;
     }
 
     function updateDayTag(mIndex, day, text, color) {
