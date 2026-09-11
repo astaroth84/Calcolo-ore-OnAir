@@ -556,6 +556,7 @@
         .summary-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 7px;
             font-size: 0.88rem;
         }
@@ -577,6 +578,22 @@
             border-top: 1px dashed var(--accent-color);
             padding-top: 8px;
             margin-top: 6px;
+        }
+
+        .reimbursement-input-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reimbursement-input-box input {
+            width: 90px;
+            padding: 6px 8px;
+            font-size: 0.9rem;
+            text-align: right;
+            border-color: rgba(52, 211, 153, 0.4);
+            color: var(--success-color);
+            font-weight: bold;
         }
 
         @media (max-width: 620px) {
@@ -684,7 +701,11 @@
                     <input type="number" id="monthlySalary" value="2573.00" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
-                    <label for="weekdayOvertimeRate">Extra Feriale Lun-Ven (€/h Lordo)</label>
+                    <label for="forfaitAmount">Importo Forfait Straordinari (€)</label>
+                    <input type="number" id="forfaitAmount" value="352.26" step="0.01" oninput="calculateAll()">
+                </div>
+                <div class="input-group">
+                    <label for="weekdayOvertimeRate">Extra Feriale Oltre 20h (€/h Lordo)</label>
                     <input type="number" id="weekdayOvertimeRate" value="17.61" step="0.1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
@@ -698,10 +719,6 @@
                 <div class="input-group">
                     <label for="nightRate">Extra Notturno (€/h Lordo)</label>
                     <input type="number" id="nightRate" value="22.50" step="0.1" oninput="calculateAll()">
-                </div>
-                <div class="input-group">
-                    <label for="forfaitThreshold">Soglia Forfait Mensile Feriale (Ore)</label>
-                    <input type="number" id="forfaitThreshold" value="20" step="1" oninput="calculateAll()">
                 </div>
                 <div class="input-group">
                     <label for="taxDeductionRate">Trattenute Stimate / Tasse (%)</label>
@@ -737,16 +754,20 @@
                 <span id="yearNightHours" style="color: var(--night-color);">0 h</span>
             </div>
             <div class="summary-row">
-                <span>Ore Extra Feriali Pagate (> Forfait):</span>
-                <span id="yearPaidExtHours" style="color: var(--success-color);">0 h</span>
-            </div>
-            <div class="summary-row">
                 <span>Stipendio Base Proporzionato Maturato:</span>
                 <span id="yearBasePay">0.00 €</span>
             </div>
             <div class="summary-row">
-                <span>Compenso Extra/Notturno Lordo Pagato:</span>
+                <span>Totale Forfait Straordinario Annuo:</span>
+                <span id="yearForfaitPay" style="color: var(--accent-color);">0.00 €</span>
+            </div>
+            <div class="summary-row">
+                <span>Compenso Extra Oltre Forfait / Weekend / Notte:</span>
                 <span id="yearExtPay" style="color: var(--warning-color);">+0.00 €</span>
+            </div>
+            <div class="summary-row">
+                <span>Totale Rimborsi / Trasferte Annui:</span>
+                <span id="yearReimbursementsPay" style="color: var(--success-color);">+0.00 €</span>
             </div>
             <div class="summary-row total-gross">
                 <span>Totale Lordo Annuo:</span>
@@ -951,16 +972,22 @@
                         <span id="summary-night-${mIndex}" style="color: var(--night-color);">0 h</span>
                     </div>
                     <div class="summary-row">
-                        <span>Ore Extra Pagate (> Forfait Feriale):</span>
-                        <span id="summary-paid-ext-${mIndex}" style="color: var(--success-color);">0 h</span>
-                    </div>
-                    <div class="summary-row">
                         <span>Stipendio Base Proporzionato:</span>
                         <span id="summary-base-pay-${mIndex}">0.00 €</span>
                     </div>
                     <div class="summary-row">
-                        <span>Compenso Extra/Notturno Lordo:</span>
+                        <span>Indennità Forfait Straordinari (Fissa):</span>
+                        <span id="summary-forfait-pay-${mIndex}" style="color: var(--accent-color);">+0.00 €</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Compenso Extra Oltre Forfait / Weekend / Notte:</span>
                         <span id="summary-ext-pay-${mIndex}" style="color: var(--warning-color);">+0.00 €</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Rimborsi / Trasferte Man. (€):</span>
+                        <div class="reimbursement-input-box">
+                            <input type="number" id="reimbursement-m${mIndex}" value="0.00" step="10" oninput="onReimbursementChange(${mIndex})">
+                        </div>
                     </div>
                     <div class="summary-row total-gross">
                         <span>Totale Lordo Mese:</span>
@@ -994,24 +1021,36 @@
         saveSingleDayCloud(mIndex, d);
     }
 
+    function onReimbursementChange(mIndex) {
+        calculateAll();
+        if (!window.firebaseReady) return;
+        const yearSelect = document.getElementById('yearSelect');
+        const year = yearSelect.value;
+        const val = parseFloat(document.getElementById(`reimbursement-m${mIndex}`).value) || 0;
+
+        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/reimbursement`);
+        window.dbSet(pathRef, val);
+    }
+
     function calculateAll() {
         const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
         const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+        const forfaitAmount = parseFloat(document.getElementById('forfaitAmount').value) || 0;
         const weekdayOvertimeRate = parseFloat(document.getElementById('weekdayOvertimeRate').value) || 0;
         const saturdayOvertimeRate = parseFloat(document.getElementById('saturdayOvertimeRate').value) || 0;
         const sundayOvertimeRate = parseFloat(document.getElementById('sundayOvertimeRate').value) || 0;
         const nightRate = parseFloat(document.getElementById('nightRate').value) || 0;
-        const forfaitThreshold = parseFloat(document.getElementById('forfaitThreshold').value) || 0;
         const taxRate = (parseFloat(document.getElementById('taxDeductionRate').value) || 0) / 100;
 
         let yearWorkedDays = 0;
         let yearStdHrs = 0;
         let yearExtHrs = 0;
         let yearNightHrs = 0;
-        let yearPaidExtHrs = 0;
         let yearBasePay = 0;
+        let yearForfaitPay = 0;
         let yearExtPay = 0;
+        let yearReimbursementsPay = 0;
 
         monthNames.forEach((_, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
@@ -1060,53 +1099,43 @@
             }
 
             let accumulatedWeekdayOvertime = 0;
-            let monthPaidExtPay = 0;
-            let monthPaidExtHrs = 0;
+            let monthExtraOveragePay = 0;
 
             overtimeEntries.forEach(entry => {
                 let paidHoursInThisEntry = 0;
-                let rate = weekdayOvertimeRate;
 
-                // SE É SABATO O DOMENICA: FUORI FORFAIT -> PAGATE TUTTE AL 100%
                 if (entry.dayOfWeek === 6) {
-                    rate = saturdayOvertimeRate;
-                    paidHoursInThisEntry = entry.hours;
-                    monthPaidExtHrs += paidHoursInThisEntry;
+                    monthExtraOveragePay += (entry.hours * saturdayOvertimeRate);
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Sabato (€)`, "var(--success-color)");
                 } else if (entry.dayOfWeek === 0) {
-                    rate = sundayOvertimeRate;
-                    paidHoursInThisEntry = entry.hours;
-                    monthPaidExtHrs += paidHoursInThisEntry;
+                    monthExtraOveragePay += (entry.hours * sundayOvertimeRate);
+                    updateDayTag(mIndex, entry.day, `+${entry.hours}h Festivo (€)`, "var(--success-color)");
                 } else {
-                    // FERIALE LUN-VEN: APPLICA SOGLIA FORFAIT
                     for (let h = 0; h < entry.hours; h += 1) {
                         accumulatedWeekdayOvertime += 1;
-                        if (accumulatedWeekdayOvertime > forfaitThreshold) {
+                        if (accumulatedWeekdayOvertime > 20) {
                             paidHoursInThisEntry += 1;
                         }
                     }
-                    monthPaidExtHrs += paidHoursInThisEntry;
+
+                    monthExtraOveragePay += (paidHoursInThisEntry * weekdayOvertimeRate);
+
+                    let tagTxt = paidHoursInThisEntry > 0 ? `+${entry.hours}h (${paidHoursInThisEntry}h €)` : `+${entry.hours}h (Forfait)`;
+                    updateDayTag(mIndex, entry.day, tagTxt, paidHoursInThisEntry > 0 ? "var(--success-color)" : "var(--warning-color)");
                 }
-
-                monthPaidExtPay += (paidHoursInThisEntry * rate);
-
-                const nightHours = parseInt(document.getElementById(`val-m${mIndex}-d${entry.day}-night`).innerText) || 0;
-                
-                let isPaidDirectly = (entry.dayOfWeek === 0 || entry.dayOfWeek === 6 || paidHoursInThisEntry > 0);
-                let tagTxt = isPaidDirectly ? `+${entry.hours}h (€)` : `+${entry.hours}h (Forfait)`;
-                if (nightHours > 0) tagTxt += ` | +${nightHours}h Notte`;
-
-                updateDayTag(mIndex, entry.day, tagTxt, isPaidDirectly ? "var(--success-color)" : "var(--warning-color)");
             });
 
-            // Calcolo importo notturno
             const monthNightPay = monthNightHrs * nightRate;
-            const totalExtraAndNightPay = monthPaidExtPay + monthNightPay;
+            const monthForfaitPay = (monthWorkedDays > 0) ? forfaitAmount : 0;
+            const monthExtraAndNightTotal = monthExtraOveragePay + monthNightPay;
 
-            // Stipendio Base Proporzionato ai giorni lavorati
+            const elReimbursement = document.getElementById(`reimbursement-m${mIndex}`);
+            const monthReimbursementVal = elReimbursement ? (parseFloat(elReimbursement.value) || 0) : 0;
+
             const dailyBaseRate = totalWorkDaysInMonth > 0 ? (monthlySalary / totalWorkDaysInMonth) : 0;
             const monthBasePay = Math.min(monthlySalary, monthWorkedDays * dailyBaseRate);
 
-            const monthGrossTotal = monthBasePay + totalExtraAndNightPay;
+            const monthGrossTotal = monthBasePay + monthForfaitPay + monthExtraAndNightTotal + monthReimbursementVal;
             const monthNetTotal = monthGrossTotal * (1 - taxRate);
 
             const elDays = document.getElementById(`summary-worked-days-${mIndex}`);
@@ -1121,14 +1150,14 @@
             const elNightSum = document.getElementById(`summary-night-${mIndex}`);
             if (elNightSum) elNightSum.innerText = `${monthNightHrs} h`;
 
-            const elPaidExt = document.getElementById(`summary-paid-ext-${mIndex}`);
-            if (elPaidExt) elPaidExt.innerText = `${monthPaidExtHrs} h`;
-
             const elBasePay = document.getElementById(`summary-base-pay-${mIndex}`);
             if (elBasePay) elBasePay.innerText = `${monthBasePay.toFixed(2)} €`;
 
+            const elForfaitPay = document.getElementById(`summary-forfait-pay-${mIndex}`);
+            if (elForfaitPay) elForfaitPay.innerText = `+${monthForfaitPay.toFixed(2)} €`;
+
             const elExtPay = document.getElementById(`summary-ext-pay-${mIndex}`);
-            if (elExtPay) elExtPay.innerText = `+${totalExtraAndNightPay.toFixed(2)} €`;
+            if (elExtPay) elExtPay.innerText = `+${monthExtraAndNightTotal.toFixed(2)} €`;
 
             const elGross = document.getElementById(`summary-gross-${mIndex}`);
             if (elGross) elGross.innerText = `${monthGrossTotal.toFixed(2)} €`;
@@ -1140,21 +1169,23 @@
             yearStdHrs += monthStdHrs;
             yearExtHrs += monthExtHrs;
             yearNightHrs += monthNightHrs;
-            yearPaidExtHrs += monthPaidExtHrs;
             yearBasePay += monthBasePay;
-            yearExtPay += totalExtraAndNightPay;
+            yearForfaitPay += monthForfaitPay;
+            yearExtPay += monthExtraAndNightTotal;
+            yearReimbursementsPay += monthReimbursementVal;
         });
 
-        const yearGrossTotal = yearBasePay + yearExtPay;
+        const yearGrossTotal = yearBasePay + yearForfaitPay + yearExtPay + yearReimbursementsPay;
         const yearNetTotal = yearGrossTotal * (1 - taxRate);
 
         document.getElementById('yearWorkDays').innerText = `${yearWorkedDays} giorni`;
         document.getElementById('yearStdHours').innerText = `${yearStdHrs} h`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs} h`;
         document.getElementById('yearNightHours').innerText = `${yearNightHrs} h`;
-        document.getElementById('yearPaidExtHours').innerText = `${yearPaidExtHrs} h`;
         document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
+        document.getElementById('yearForfaitPay').innerText = `+${yearForfaitPay.toFixed(2)} €`;
         document.getElementById('yearExtPay').innerText = `+${yearExtPay.toFixed(2)} €`;
+        document.getElementById('yearReimbursementsPay').innerText = `+${yearReimbursementsPay.toFixed(2)} €`;
         document.getElementById('yearGrossTotal').innerText = `${yearGrossTotal.toFixed(2)} €`;
         document.getElementById('yearNetTotal').innerText = `${yearNetTotal.toFixed(2)} €`;
     }
@@ -1215,6 +1246,10 @@
             if (elExt) elExt.innerText = 0;
             if (elNight) elNight.innerText = 0;
         }
+        
+        const elReimb = document.getElementById(`reimbursement-m${mIndex}`);
+        if (elReimb) elReimb.value = "0.00";
+
         calculateAll();
 
         if (window.firebaseReady) {
@@ -1246,6 +1281,11 @@
                     elOrd.innerText = dayObj.ord || 0;
                     elExt.innerText = dayObj.ext || 0;
                     elNight.innerText = dayObj.night || 0;
+                }
+
+                const elReimb = document.getElementById(`reimbursement-m${mIndex}`);
+                if (elReimb && monthData.reimbursement !== undefined) {
+                    elReimb.value = parseFloat(monthData.reimbursement).toFixed(2);
                 }
             });
 
