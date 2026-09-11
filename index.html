@@ -392,8 +392,8 @@
         .day-info-left {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 120px;
+            gap: 10px;
+            min-width: 130px;
         }
 
         .day-num-circle {
@@ -442,8 +442,20 @@
         .day-controls-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+        }
+
+        .status-select {
+            padding: 5px 8px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--accent-color);
+            outline: none;
+            cursor: pointer;
         }
 
         .ctrl-pill-group {
@@ -738,12 +750,20 @@
         <div class="summary-box">
             <h2 style="font-size: 1.05rem; color: var(--accent-color); margin-bottom: 12px; text-shadow: 0 0 8px var(--accent-glow);">Bilancio Complessivo Anno</h2>
             <div class="summary-row">
-                <span>Giornate Lavorate Totali Annue:</span>
+                <span>Giornate Retribuite Totali Annue:</span>
                 <span id="yearWorkDays">0 giorni</span>
             </div>
             <div class="summary-row">
-                <span>Totale Ore Ordinarie Annue:</span>
+                <span>Totale Ore Ordinarie Lavorate:</span>
                 <span id="yearStdHours">0 h</span>
+            </div>
+            <div class="summary-row">
+                <span>Totale Ore Permessi (ROL / Ex-Fest):</span>
+                <span id="yearPermitHours" style="color: #60a5fa;">0 h</span>
+            </div>
+            <div class="summary-row">
+                <span>Totale Giorni Ferie / Malattia:</span>
+                <span id="yearVacationDays" style="color: #f43f5e;">0 gg</span>
             </div>
             <div class="summary-row">
                 <span>Totale Ore Extra Inserite:</span>
@@ -916,6 +936,14 @@
                         </div>
 
                         <div class="day-controls-right">
+                            <select class="status-select" id="status-m${mIndex}-d${d}" onchange="onStatusChange(${mIndex}, ${d})">
+                                <option value="WORK">Lavoro</option>
+                                <option value="PERM">Permesso (ROL)</option>
+                                <option value="FERIE">Ferie</option>
+                                <option value="MALATTIA">Malattia</option>
+                                <option value="FEST">Festività</option>
+                            </select>
+
                             <div class="ctrl-pill-group ord-group">
                                 <span class="ctrl-pill-label">ORD</span>
                                 <button class="btn-touch" onclick="changeHours(${mIndex}, ${d}, 'ord', -1)">-</button>
@@ -956,12 +984,20 @@
 
                 <div class="summary-box">
                     <div class="summary-row">
-                        <span>Giornate Lavorate Effettive:</span>
+                        <span>Giornate Retribuite Effettive:</span>
                         <span id="summary-worked-days-${mIndex}">0 / 0 giorni</span>
                     </div>
                     <div class="summary-row">
-                        <span>Ore Ordinarie Totali:</span>
+                        <span>Ore Ordinarie Lavorate:</span>
                         <span id="summary-std-${mIndex}">0 h</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ore Permessi Usufruite (ROL/Ex-Fest):</span>
+                        <span id="summary-perm-${mIndex}" style="color: #60a5fa;">0 h</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Giorni Ferie / Malattia:</span>
+                        <span id="summary-vac-${mIndex}" style="color: #f43f5e;">0 gg</span>
                     </div>
                     <div class="summary-row">
                         <span>Ore Extra Inserite:</span>
@@ -1007,7 +1043,26 @@
         attachFirebaseListener();
     }
 
+    function onStatusChange(mIndex, d) {
+        const st = document.getElementById(`status-m${mIndex}-d${d}`).value;
+        const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+        const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
+        const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
+
+        if (st === 'FERIE' || st === 'MALATTIA' || st === 'FEST') {
+            if (elOrd) elOrd.innerText = 0;
+            if (elExt) elExt.innerText = 0;
+            if (elNight) elNight.innerText = 0;
+        }
+
+        calculateAll();
+        saveSingleDayCloud(mIndex, d);
+    }
+
     function changeHours(mIndex, d, type, delta) {
+        const st = document.getElementById(`status-m${mIndex}-d${d}`).value;
+        if (st === 'FERIE' || st === 'MALATTIA') return; // Blocca inserimento ore in ferie o malattia
+
         const el = document.getElementById(`val-m${mIndex}-d${d}-${type}`);
         if (!el) return;
 
@@ -1045,6 +1100,8 @@
 
         let yearWorkedDays = 0;
         let yearStdHrs = 0;
+        let yearPermitHrs = 0;
+        let yearVacationDays = 0;
         let yearExtHrs = 0;
         let yearNightHrs = 0;
         let yearBasePay = 0;
@@ -1056,32 +1113,46 @@
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
             const totalWorkDaysInMonth = getWorkingDaysInMonth(year, mIndex);
             
-            let monthWorkedDays = 0;
+            let monthPaidDays = 0;
             let monthStdHrs = 0;
+            let monthPermitHrs = 0;
+            let monthVacationDays = 0;
             let monthExtHrs = 0;
             let monthNightHrs = 0;
 
             const overtimeEntries = [];
 
             for (let d = 1; d <= daysInMonth; d++) {
+                const statusEl = document.getElementById(`status-m${mIndex}-d${d}`);
                 const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                 const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
                 const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
-                if (!elOrd || !elExt || !elNight) continue;
+                if (!statusEl || !elOrd || !elExt || !elNight) continue;
 
+                const st = statusEl.value;
                 const ordHours = parseInt(elOrd.innerText) || 0;
                 const extHours = parseInt(elExt.innerText) || 0;
                 const nightHours = parseInt(elNight.innerText) || 0;
 
-                if (ordHours > 0 || extHours > 0 || nightHours > 0) {
-                    monthWorkedDays++;
+                const dateObj = new Date(year, mIndex, d);
+                const dayOfWeek = dateObj.getDay();
+
+                // Calcolo coperture retribuite per lo stipendio base
+                if (st === 'WORK' && (ordHours > 0 || extHours > 0 || nightHours > 0)) {
+                    monthPaidDays++;
+                } else if (st === 'PERM') {
+                    monthPaidDays++;
+                    const permHours = (8 - ordHours) > 0 ? (8 - ordHours) : 0;
+                    monthPermitHrs += permHours;
+                } else if (st === 'FERIE' || st === 'MALATTIA' || st === 'FEST') {
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        monthPaidDays++;
+                        if (st === 'FERIE' || st === 'MALATTIA') monthVacationDays++;
+                    }
                 }
 
                 monthStdHrs += ordHours;
                 monthNightHrs += nightHours;
-
-                const dateObj = new Date(year, mIndex, d);
-                const dayOfWeek = dateObj.getDay();
 
                 if (extHours > 0) {
                     monthExtHrs += extHours;
@@ -1092,7 +1163,12 @@
                     });
                 } else {
                     let tagParts = [];
-                    if (ordHours > 0) tagParts.push("OK");
+                    if (st === 'PERM') tagParts.push(`Permesso (${8 - ordHours}h)`);
+                    else if (st === 'FERIE') tagParts.push("Ferie");
+                    else if (st === 'MALATTIA') tagParts.push("Malattia");
+                    else if (st === 'FEST') tagParts.push("Festività");
+                    else if (ordHours > 0) tagParts.push("OK");
+
                     if (nightHours > 0) tagParts.push(`+${nightHours}h Notte`);
                     updateDayTag(mIndex, d, tagParts.length > 0 ? tagParts.join(" | ") : "-", nightHours > 0 ? "var(--night-color)" : "var(--text-muted)");
                 }
@@ -1126,23 +1202,29 @@
             });
 
             const monthNightPay = monthNightHrs * nightRate;
-            const monthForfaitPay = (monthWorkedDays > 0) ? forfaitAmount : 0;
+            const monthForfaitPay = (monthPaidDays > 0) ? forfaitAmount : 0;
             const monthExtraAndNightTotal = monthExtraOveragePay + monthNightPay;
 
             const elReimbursement = document.getElementById(`reimbursement-m${mIndex}`);
             const monthReimbursementVal = elReimbursement ? (parseFloat(elReimbursement.value) || 0) : 0;
 
             const dailyBaseRate = totalWorkDaysInMonth > 0 ? (monthlySalary / totalWorkDaysInMonth) : 0;
-            const monthBasePay = Math.min(monthlySalary, monthWorkedDays * dailyBaseRate);
+            const monthBasePay = Math.min(monthlySalary, monthPaidDays * dailyBaseRate);
 
             const monthGrossTotal = monthBasePay + monthForfaitPay + monthExtraAndNightTotal + monthReimbursementVal;
             const monthNetTotal = monthGrossTotal * (1 - taxRate);
 
             const elDays = document.getElementById(`summary-worked-days-${mIndex}`);
-            if (elDays) elDays.innerText = `${monthWorkedDays} / ${totalWorkDaysInMonth} giorni`;
+            if (elDays) elDays.innerText = `${monthPaidDays} / ${totalWorkDaysInMonth} giorni`;
 
             const elStd = document.getElementById(`summary-std-${mIndex}`);
             if (elStd) elStd.innerText = `${monthStdHrs} h`;
+
+            const elPerm = document.getElementById(`summary-perm-${mIndex}`);
+            if (elPerm) elPerm.innerText = `${monthPermitHrs} h`;
+
+            const elVac = document.getElementById(`summary-vac-${mIndex}`);
+            if (elVac) elVac.innerText = `${monthVacationDays} gg`;
 
             const elExt = document.getElementById(`summary-ext-${mIndex}`);
             if (elExt) elExt.innerText = `${monthExtHrs} h`;
@@ -1165,8 +1247,10 @@
             const elNet = document.getElementById(`summary-net-${mIndex}`);
             if (elNet) elNet.innerText = `${monthNetTotal.toFixed(2)} €`;
 
-            yearWorkedDays += monthWorkedDays;
+            yearWorkedDays += monthPaidDays;
             yearStdHrs += monthStdHrs;
+            yearPermitHrs += monthPermitHrs;
+            yearVacationDays += monthVacationDays;
             yearExtHrs += monthExtHrs;
             yearNightHrs += monthNightHrs;
             yearBasePay += monthBasePay;
@@ -1180,6 +1264,8 @@
 
         document.getElementById('yearWorkDays').innerText = `${yearWorkedDays} giorni`;
         document.getElementById('yearStdHours').innerText = `${yearStdHrs} h`;
+        document.getElementById('yearPermitHours').innerText = `${yearPermitHrs} h`;
+        document.getElementById('yearVacationDays').innerText = `${yearVacationDays} gg`;
         document.getElementById('yearExtHours').innerText = `${yearExtHrs} h`;
         document.getElementById('yearNightHours').innerText = `${yearNightHrs} h`;
         document.getElementById('yearBasePay').innerText = `${yearBasePay.toFixed(2)} €`;
@@ -1202,12 +1288,13 @@
         if (!window.firebaseReady) return;
         const yearSelect = document.getElementById('yearSelect');
         const year = yearSelect.value;
+        const stVal = document.getElementById(`status-m${mIndex}-d${day}`).value;
         const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ord`).innerText) || 0;
         const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-ext`).innerText) || 0;
         const nightVal = parseInt(document.getElementById(`val-m${mIndex}-d${day}-night`).innerText) || 0;
 
         const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
-        window.dbSet(pathRef, { ord: ordVal, ext: extVal, night: nightVal });
+        window.dbSet(pathRef, { status: stVal, ord: ordVal, ext: extVal, night: nightVal });
     }
 
     function fillMonthWorkdays(mIndex) {
@@ -1220,9 +1307,11 @@
             const dateObj = new Date(year, mIndex, d);
             const dayOfWeek = dateObj.getDay();
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                const elStatus = document.getElementById(`status-m${mIndex}-d${d}`);
                 const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
+                if (elStatus) elStatus.value = "WORK";
                 if (elOrd) elOrd.innerText = 8;
-                monthState[d] = { ord: 8, ext: 0, night: 0 };
+                monthState[d] = { status: "WORK", ord: 8, ext: 0, night: 0 };
             }
         }
         calculateAll();
@@ -1239,9 +1328,11 @@
         const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const elStatus = document.getElementById(`status-m${mIndex}-d${d}`);
             const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
             const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
             const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
+            if (elStatus) elStatus.value = "WORK";
             if (elOrd) elOrd.innerText = 0;
             if (elExt) elExt.innerText = 0;
             if (elNight) elNight.innerText = 0;
@@ -1272,12 +1363,14 @@
                 const monthData = data[mIndex] || {};
 
                 for (let d = 1; d <= daysInMonth; d++) {
+                    const elStatus = document.getElementById(`status-m${mIndex}-d${d}`);
                     const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                     const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
                     const elNight = document.getElementById(`val-m${mIndex}-d${d}-night`);
-                    if (!elOrd || !elExt || !elNight) continue;
+                    if (!elStatus || !elOrd || !elExt || !elNight) continue;
 
-                    const dayObj = monthData[d] || { ord: 0, ext: 0, night: 0 };
+                    const dayObj = monthData[d] || { status: "WORK", ord: 0, ext: 0, night: 0 };
+                    elStatus.value = dayObj.status || "WORK";
                     elOrd.innerText = dayObj.ord || 0;
                     elExt.innerText = dayObj.ext || 0;
                     elNight.innerText = dayObj.night || 0;
