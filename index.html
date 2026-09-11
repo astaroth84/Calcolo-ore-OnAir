@@ -659,7 +659,8 @@
                 <thead>
                     <tr>
                         <th>Voce</th>
-                        <th>Iniziale</th>
+                        <th>Iniziale (A.P.)</th>
+                        <th>Maturato A.C.</th>
                         <th>Goduto Annuo</th>
                         <th>Saldo Residuo</th>
                     </tr>
@@ -668,12 +669,14 @@
                     <tr>
                         <td><strong>Ferie (Giorni)</strong></td>
                         <td id="rateiInizFerie">0 gg</td>
+                        <td id="rateiMatFerie" style="color: var(--accent-color);">+0 gg</td>
                         <td id="rateiGodFerie" style="color: #f43f5e;">0 gg</td>
                         <td id="rateiResFerie" style="color: var(--success-color); font-weight: bold;">0 gg</td>
                     </tr>
                     <tr>
                         <td><strong>Permessi ROL / Ex-Fest (Ore)</strong></td>
                         <td id="rateiInizRol">0 h</td>
+                        <td id="rateiMatRol" style="color: var(--accent-color);">+0 h</td>
                         <td id="rateiGodRol" style="color: #60a5fa;">0 h</td>
                         <td id="rateiResRol" style="color: var(--success-color); font-weight: bold;">0 h</td>
                     </tr>
@@ -953,6 +956,7 @@
         let yearForfaitPay = 0;
         let yearExtPay = 0;
         let yearReimbursementsPay = 0;
+        let compiledMonthsCount = 0;
 
         monthNames.forEach((_, mIndex) => {
             const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
@@ -1013,6 +1017,8 @@
                     updateDayTag(mIndex, d, tagParts.length > 0 ? tagParts.join(" | ") : "-", nightHours > 0 ? "var(--night-color)" : "var(--text-muted)");
                 }
             }
+
+            if (monthPaidDays > 0) compiledMonthsCount++;
 
             let accumulatedWeekdayOvertime = 0;
             let monthExtraOveragePay = 0;
@@ -1112,15 +1118,21 @@
         document.getElementById('yearGrossTotal').innerText = `${yearGrossTotal.toFixed(2)} €`;
         document.getElementById('yearNetTotal').innerText = `${yearNetTotal.toFixed(2)} €`;
 
-        // TABELLA RATEI E RESIDUI
+        // MATURAZIONE AUTOMATICA ANNO CORRENTE
+        const earnedFerie = compiledMonthsCount * 2.16; // ~2.16 giorni di ferie al mese
+        const earnedRol = compiledMonthsCount * 6.0;   // ~6 ore di permessi/ROL al mese
+
         const totalInitPermitHours = initRol + initExFest;
+
         document.getElementById('rateiInizFerie').innerText = `${initFerie.toFixed(2)} gg`;
+        document.getElementById('rateiMatFerie').innerText = `+${earnedFerie.toFixed(2)} gg`;
         document.getElementById('rateiGodFerie').innerText = `${yearVacationDays} gg`;
-        document.getElementById('rateiResFerie').innerText = `${(initFerie - yearVacationDays).toFixed(2)} gg`;
+        document.getElementById('rateiResFerie').innerText = `${(initFerie + earnedFerie - yearVacationDays).toFixed(2)} gg`;
 
         document.getElementById('rateiInizRol').innerText = `${totalInitPermitHours.toFixed(2)} h`;
+        document.getElementById('rateiMatRol').innerText = `+${earnedRol.toFixed(2)} h`;
         document.getElementById('rateiGodRol').innerText = `${yearPermitHrs} h`;
-        document.getElementById('rateiResRol').innerText = `${(totalInitPermitHours - yearPermitHrs).toFixed(2)} h`;
+        document.getElementById('rateiResRol').innerText = `${(totalInitPermitHours + earnedRol - yearPermitHrs).toFixed(2)} h`;
     }
 
     function updateDayTag(mIndex, day, text, color) {
