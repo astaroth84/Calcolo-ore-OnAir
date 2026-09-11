@@ -6,6 +6,7 @@
     <title>Calcolatore Ore & Straordinari - Santoro Carlo</title>
 
     <!-- Supporto PWA App -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#060911">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1118,10 +1119,8 @@
         document.getElementById('yearGrossTotal').innerText = `${yearGrossTotal.toFixed(2)} €`;
         document.getElementById('yearNetTotal').innerText = `${yearNetTotal.toFixed(2)} €`;
 
-        // MATURAZIONE AUTOMATICA ANNO CORRENTE
-        const earnedFerie = compiledMonthsCount * 2.16; // ~2.16 giorni di ferie al mese
-        const earnedRol = compiledMonthsCount * 6.0;   // ~6 ore di permessi/ROL al mese
-
+        const earnedFerie = compiledMonthsCount * 2.16;
+        const earnedRol = compiledMonthsCount * 6.0;
         const totalInitPermitHours = initRol + initExFest;
 
         document.getElementById('rateiInizFerie').innerText = `${initFerie.toFixed(2)} gg`;
