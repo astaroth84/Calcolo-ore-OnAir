@@ -358,6 +358,7 @@
             margin-bottom: 20px;
         }
 
+        /* CARD GIORNO CON SUPPORTO PER SCORRIMENTO ORIZZONTALE */
         .day-card-row {
             background: var(--day-bg);
             border: 1px solid var(--border-color);
@@ -369,6 +370,8 @@
             gap: 12px;
             transition: all 0.2s ease;
             backdrop-filter: blur(8px);
+            overflow-x: auto;
+            position: relative;
         }
 
         .day-card-row.saturday {
@@ -407,11 +410,18 @@
             font-weight: 900;
         }
 
+        /* COLONNA GIORNO FLUTTUANTE A SINISTRA (STICKY) */
         .day-info-left {
             display: flex;
             align-items: center;
             gap: 10px;
             min-width: 130px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background: rgba(15, 23, 42, 0.95);
+            padding-right: 8px;
+            border-radius: 10px;
         }
 
         .day-num-circle {
@@ -433,7 +443,7 @@
         .day-name-label { font-size: 0.88rem; font-weight: 800; color: var(--text-color); text-transform: capitalize; }
         .day-tag { font-size: 0.72rem; font-weight: 800; margin-top: 1px; }
 
-        .day-controls-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .day-controls-right { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 
         .status-select {
             padding: 5px 8px;
@@ -529,10 +539,7 @@
             .logo-onair .text-multimedia { font-size: 0.48rem; }
             .title-box h1 { font-size: 0.92rem; }
             .title-box .subtitle-name { font-size: 0.85rem; }
-            .day-card-row { padding: 8px; gap: 4px; flex-direction: column; align-items: stretch; }
-            .day-info-left { justify-content: space-between; min-width: 100%; }
-            .day-controls-right { justify-content: space-between; gap: 4px; margin-top: 4px; }
-            .ctrl-pill-group { flex: 1; justify-content: space-between; padding: 3px 5px; }
+            .day-card-row { padding: 8px; gap: 8px; }
             .btn-touch { width: 28px; height: 28px; font-size: 0.95rem; }
             .touch-val { font-size: 0.9rem; width: 16px; }
             .ctrl-pill-label { font-size: 0.6rem; }
