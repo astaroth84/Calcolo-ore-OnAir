@@ -199,7 +199,6 @@
             gap: 10px;
         }
 
-        /* PULSANTE SALVA SCENOGRAFICO */
         .btn-save-glow {
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 197, 0.3));
             color: var(--accent-color);
@@ -753,6 +752,7 @@
 
     let currentCloudPassword = "1234";
     let hasUnsavedChanges = false;
+    let activeMonthIndex = 0;
 
     window.addEventListener('beforeunload', function (e) {
         if (hasUnsavedChanges) {
@@ -782,18 +782,52 @@
         }
     }
 
+    // Salva manualmente tutti i dati del mese corrente su Firebase
     function forceManualSave() {
-        const btn = document.getElementById('mainSaveBtn');
-        const saveText = document.getElementById('saveText');
-
-        hasUnsavedChanges = false;
-        if (btn && saveText) {
-            btn.className = 'btn-save-glow saved-success';
-            saveText.innerText = 'Salvato! ✓';
-            setTimeout(() => {
-                updateSaveBtnState();
-            }, 2000);
+        if (!window.firebaseReady) {
+            alert("Firebase non pronto!");
+            return;
         }
+
+        const yearSelect = document.getElementById('yearSelect');
+        const year = yearSelect.value;
+        const daysInMonth = new Date(parseInt(year), activeMonthIndex + 1, 0).getDate();
+        const monthState = {};
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const elStatus = document.getElementById(`status-m${activeMonthIndex}-d${d}`);
+            const elOrd = document.getElementById(`val-m${activeMonthIndex}-d${d}-ord`);
+            const elExt = document.getElementById(`val-m${activeMonthIndex}-d${d}-ext`);
+            const elNight = document.getElementById(`val-m${activeMonthIndex}-d${d}-night`);
+
+            if (elStatus && elOrd && elExt && elNight) {
+                monthState[d] = {
+                    status: elStatus.value,
+                    ord: parseInt(elOrd.innerText) || 0,
+                    ext: parseInt(elExt.innerText) || 0,
+                    night: parseInt(elNight.innerText) || 0
+                };
+            }
+        }
+
+        const elReimb = document.getElementById(`reimbursement-m${activeMonthIndex}`);
+        if (elReimb) {
+            monthState.reimbursement = parseFloat(elReimb.value) || 0;
+        }
+
+        const pathRef = window.dbRef(window.db, `work_data/${year}/${activeMonthIndex}`);
+        window.dbSet(pathRef, monthState).then(() => {
+            hasUnsavedChanges = false;
+            const btn = document.getElementById('mainSaveBtn');
+            const saveText = document.getElementById('saveText');
+            if (btn && saveText) {
+                btn.className = 'btn-save-glow saved-success';
+                saveText.innerText = 'Salvato! ✓';
+                setTimeout(() => {
+                    updateSaveBtnState();
+                }, 2000);
+            }
+        });
     }
 
     function checkPass() {
@@ -862,6 +896,7 @@
             document.querySelector('.tab-btn:last-child').classList.add('active');
             document.getElementById('tab-annual').classList.add('active');
         } else {
+            activeMonthIndex = tabId;
             const btn = document.getElementById(`btn-tab-${tabId}`);
             const content = document.getElementById(`tab-month-${tabId}`);
             if (btn) btn.classList.add('active');
@@ -999,7 +1034,6 @@
         }
 
         calculateAll();
-        saveSingleDayCloud(mIndex, d);
     }
 
     function changeHours(mIndex, d, type, delta) {
@@ -1018,23 +1052,12 @@
         hasUnsavedChanges = true;
         updateSaveBtnState();
         calculateAll();
-        saveSingleDayCloud(mIndex, d);
     }
 
     function onReimbursementChange(mIndex) {
         hasUnsavedChanges = true;
         updateSaveBtnState();
         calculateAll();
-        if (!window.firebaseReady) return;
-        const yearSelect = document.getElementById('yearSelect');
-        const year = yearSelect.value;
-        const val = parseFloat(document.getElementById(`reimbursement-m${mIndex}`).value) || 0;
-
-        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/reimbursement`);
-        window.dbSet(pathRef, val).then(() => {
-            hasUnsavedChanges = false;
-            updateSaveBtnState();
-        });
     }
 
     function calculateAll() {
@@ -1247,22 +1270,6 @@
         }
     }
 
-    function saveSingleDayCloud(mIndex, day) {
-        if (!window.firebaseReady) return;
-        const yearSelect = document.getElementById('yearSelect');
-        const year = yearSelect.value;
-        const stVal = document.getElementById(`status-m${mIndex}-d${day}`).value;
-        const ordVal = parseInt(document.getElementById(`val-m${mIndex}-d${d}-ord`).innerText) || 0;
-        const extVal = parseInt(document.getElementById(`val-m${mIndex}-d${d}-ext`).innerText) || 0;
-        const nightVal = parseInt(document.getElementById(`val-m${mIndex}-d${d}-night`).innerText) || 0;
-
-        const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
-        window.dbSet(pathRef, { status: stVal, ord: ordVal, ext: extVal, night: nightVal }).then(() => {
-            hasUnsavedChanges = false;
-            updateSaveBtnState();
-        });
-    }
-
     function fillMonthWorkdays(mIndex) {
         const mName = monthNames[mIndex];
         if (!confirm(`Sei sicuro di voler compilare automaticamente i giorni Lun-Ven (8h) per ${mName}? I dati esistenti verranno sovrascritti.`)) {
@@ -1272,7 +1279,6 @@
         const yearSelect = document.getElementById('yearSelect');
         const year = parseInt(yearSelect.value);
         const daysInMonth = new Date(year, mIndex + 1, 0).getDate();
-        const monthState = {};
 
         for (let d = 1; d <= daysInMonth; d++) {
             const dateObj = new Date(year, mIndex, d);
@@ -1282,18 +1288,9 @@
                 const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
                 if (elStatus) elStatus.value = "WORK";
                 if (elOrd) elOrd.innerText = 8;
-                monthState[d] = { status: "WORK", ord: 8, ext: 0, night: 0 };
             }
         }
-        calculateAll();
-
-        if (window.firebaseReady) {
-            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, monthState).then(() => {
-                hasUnsavedChanges = false;
-                updateSaveBtnState();
-            });
-        }
+        markUnsavedAndCalc();
     }
 
     function clearMonth(mIndex) {
@@ -1320,15 +1317,7 @@
         const elReimb = document.getElementById(`reimbursement-m${mIndex}`);
         if (elReimb) elReimb.value = "0.00";
 
-        calculateAll();
-
-        if (window.firebaseReady) {
-            const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, null).then(() => {
-                hasUnsavedChanges = false;
-                updateSaveBtnState();
-            });
-        }
+        markUnsavedAndCalc();
     }
 
     async function exportBackupJSON() {
@@ -1384,7 +1373,7 @@
         const year = yearSelect.value;
 
         const yearRef = window.dbRef(window.db, `work_data/${year}`);
-        window.dbOnValue(yearRef, (snapshot) => {
+        window.dbGet(yearRef).then((snapshot) => {
             const data = snapshot.val() || {};
             
             monthNames.forEach((_, mIndex) => {
