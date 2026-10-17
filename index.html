@@ -193,6 +193,54 @@
             gap: 14px;
         }
 
+        .header-right-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* PULSANTE SALVA SCENOGRAFICO */
+        .btn-save-glow {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 197, 0.3));
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 12px var(--accent-glow);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .btn-save-glow:active {
+            transform: scale(0.96);
+        }
+
+        .btn-save-glow.unsaved {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.4));
+            color: #fbbf24;
+            border-color: #fbbf24;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+            animation: pulseSave 1.5s infinite alternate;
+        }
+
+        .btn-save-glow.saved-success {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.3), rgba(5, 150, 105, 0.4));
+            color: #34d399;
+            border-color: #34d399;
+            box-shadow: 0 0 16px rgba(52, 211, 153, 0.5);
+        }
+
+        @keyframes pulseSave {
+            0% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.8); }
+        }
+
         .logo-onair {
             display: flex;
             flex-direction: column;
@@ -358,7 +406,6 @@
             margin-bottom: 20px;
         }
 
-        /* CARD GIORNO CON SCORRIMENTO ORIZZONTALE */
         .day-card-row {
             background: var(--day-bg);
             border: 1px solid var(--border-color);
@@ -410,7 +457,6 @@
             font-weight: 900;
         }
 
-        /* COLONNA GIORNO FLUTTUANTE A SINISTRA (STICKY) */
         .day-info-left {
             display: flex;
             align-items: center;
@@ -543,6 +589,7 @@
             .btn-touch { width: 28px; height: 28px; font-size: 0.95rem; }
             .touch-val { font-size: 0.9rem; width: 16px; }
             .ctrl-pill-label { font-size: 0.6rem; }
+            .btn-save-glow { padding: 6px 12px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -570,9 +617,14 @@
             </div>
         </div>
 
-        <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
-            <label for="yearSelect">Anno:</label>
-            <select id="yearSelect" onchange="buildYearGrid()"></select>
+        <div class="header-right-controls">
+            <button id="mainSaveBtn" class="btn-save-glow" onclick="forceManualSave()">
+                <span id="saveIcon">💾</span> <span id="saveText">Salva</span>
+            </button>
+            <div class="input-group" style="flex-direction: row; align-items: center; gap: 6px;">
+                <label for="yearSelect">Anno:</label>
+                <select id="yearSelect" onchange="buildYearGrid()"></select>
+            </div>
         </div>
     </div>
 
@@ -702,7 +754,6 @@
     let currentCloudPassword = "1234";
     let hasUnsavedChanges = false;
 
-    // Avviso prima di chiudere la scheda se ci sono modifiche in corso
     window.addEventListener('beforeunload', function (e) {
         if (hasUnsavedChanges) {
             e.preventDefault();
@@ -713,10 +764,38 @@
 
     function markUnsavedAndCalc() {
         hasUnsavedChanges = true;
+        updateSaveBtnState();
         calculateAll();
     }
 
-    // Controllo Password Semplificato e Istantaneo
+    function updateSaveBtnState() {
+        const btn = document.getElementById('mainSaveBtn');
+        const saveText = document.getElementById('saveText');
+        if (!btn || !saveText) return;
+
+        if (hasUnsavedChanges) {
+            btn.className = 'btn-save-glow unsaved';
+            saveText.innerText = 'Salva *';
+        } else {
+            btn.className = 'btn-save-glow';
+            saveText.innerText = 'Salva';
+        }
+    }
+
+    function forceManualSave() {
+        const btn = document.getElementById('mainSaveBtn');
+        const saveText = document.getElementById('saveText');
+
+        hasUnsavedChanges = false;
+        if (btn && saveText) {
+            btn.className = 'btn-save-glow saved-success';
+            saveText.innerText = 'Salvato! ✓';
+            setTimeout(() => {
+                updateSaveBtnState();
+            }, 2000);
+        }
+    }
+
     function checkPass() {
         const inputEl = document.getElementById('passInput');
         const entered = inputEl ? inputEl.value.trim() : "";
@@ -907,6 +986,7 @@
 
     function onStatusChange(mIndex, d) {
         hasUnsavedChanges = true;
+        updateSaveBtnState();
         const st = document.getElementById(`status-m${mIndex}-d${d}`).value;
         const elOrd = document.getElementById(`val-m${mIndex}-d${d}-ord`);
         const elExt = document.getElementById(`val-m${mIndex}-d${d}-ext`);
@@ -936,12 +1016,14 @@
 
         el.innerText = cur;
         hasUnsavedChanges = true;
+        updateSaveBtnState();
         calculateAll();
         saveSingleDayCloud(mIndex, d);
     }
 
     function onReimbursementChange(mIndex) {
         hasUnsavedChanges = true;
+        updateSaveBtnState();
         calculateAll();
         if (!window.firebaseReady) return;
         const yearSelect = document.getElementById('yearSelect');
@@ -949,7 +1031,10 @@
         const val = parseFloat(document.getElementById(`reimbursement-m${mIndex}`).value) || 0;
 
         const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/reimbursement`);
-        window.dbSet(pathRef, val).then(() => { hasUnsavedChanges = false; });
+        window.dbSet(pathRef, val).then(() => {
+            hasUnsavedChanges = false;
+            updateSaveBtnState();
+        });
     }
 
     function calculateAll() {
@@ -1174,6 +1259,7 @@
         const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}/${day}`);
         window.dbSet(pathRef, { status: stVal, ord: ordVal, ext: extVal, night: nightVal }).then(() => {
             hasUnsavedChanges = false;
+            updateSaveBtnState();
         });
     }
 
@@ -1203,7 +1289,10 @@
 
         if (window.firebaseReady) {
             const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, monthState).then(() => { hasUnsavedChanges = false; });
+            window.dbSet(pathRef, monthState).then(() => {
+                hasUnsavedChanges = false;
+                updateSaveBtnState();
+            });
         }
     }
 
@@ -1235,7 +1324,10 @@
 
         if (window.firebaseReady) {
             const pathRef = window.dbRef(window.db, `work_data/${year}/${mIndex}`);
-            window.dbSet(pathRef, null).then(() => { hasUnsavedChanges = false; });
+            window.dbSet(pathRef, null).then(() => {
+                hasUnsavedChanges = false;
+                updateSaveBtnState();
+            });
         }
     }
 
@@ -1276,6 +1368,7 @@
                     const yearRef = window.dbRef(window.db, `work_data/${year}`);
                     await window.dbSet(yearRef, data);
                     hasUnsavedChanges = false;
+                    updateSaveBtnState();
                     alert("Backup ripristinato con successo!");
                 }
             } catch (err) {
@@ -1320,6 +1413,7 @@
 
             calculateAll();
             hasUnsavedChanges = false;
+            updateSaveBtnState();
         });
 
         const passRef = window.dbRef(window.db, 'app_config/password');
